@@ -1,9 +1,10 @@
 from django.db import models
 
 
-class Book(models.Model):
-    title = models.CharField(max_length=100)
-    release_year = models.IntegerField()
+class Stock(models.Model):
+    symbol = models.TextField(null=True)
+    price = models.FloatField(null=True)
+    change = models.FloatField(null=True)
 
     def __str__(self):
-        return self.title
+        return self.symbol

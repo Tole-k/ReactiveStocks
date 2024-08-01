@@ -2,109 +2,65 @@ import { useEffect, useState } from 'react';
 import './App.css'
 
 function App() {
-  const [books, setBooks] = useState([]);
-  const [title, setTitle] = useState("");
-  const [releaseYear, setReleaseYear] = useState(0);
+    const [stocks, setStocks] = useState([]);
+    const [symbol, setSymbol] = useState("");
 
-  const [newTitle, setNewTitle] = useState("");
+    useEffect(() => {
+        fetchStocks();
+    }, []);
 
-  useEffect(() => {
-    fetchBooks();
-  }, []);
-
-  const fetchBooks = async () => {
-    try {
-      const response = await fetch("http://127.0.0.1:8000/api/books/");
-      const data = await response.json();
-      setBooks(data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const addBook = async () => {
-    const bookData = {
-      title,
-      release_year: releaseYear,
-    };
-    try {
-      const response = await fetch("http://127.0.0.1:8000/api/books/create/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(bookData),
-      });
-      const data = await response.json();
-      setBooks((prev) => [...prev, data]);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const updateTitle = async (pk, release_year) => {
-    const bookData = {
-      title: newTitle,
-      release_year,
-    };
-    try {
-      const response = await fetch(`http://127.0.0.1:8000/api/books/${pk}/`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(bookData),
-      });
-
-      const data = await response.json();
-      setBooks((prev) => prev.map((book) => {
-        if (book.id === pk) {
-          return data;
-        } else {
-          return book;
+    const fetchStocks = async () => {
+        try {
+            const response = await fetch("http://127.0.0.1:8000/api/stocks/");
+            const data = await response.json();
+            setStocks(data);
+        } catch (error) {
+            console.log(error);
         }
-      }));
     }
-    catch (error) {
-      console.error(error);
+    const addStock = async () => {
+        try {
+            const response = await fetch("http://127.0.0.1:8000/api/stocks/add/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({symbol}),
+            });
+            const data = await response.json();
+            setStocks((prev) => [...prev, data]);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+    const removeStock = async (id) => {
+        try {
+            // eslint-disable-next-line no-unused-vars
+            const response = await fetch(`http://127.0.0.1:8000/api/stocks/remove/${id}/`, {
+                method: "DELETE",
+            });
+            setStocks((prev) => prev.filter((stock) => stock.id !== id));
+        } catch (error) {
+            console.log(error);
+        }
     }
-  }
+    return (
+        <>
+            <h1>Stock App</h1>
 
-  const deleteBook = async (pk) => {
-    try {
-      // eslint-disable-next-line no-unused-vars
-      const response = await fetch(`http://127.0.0.1:8000/api/books/${pk}/`, {
-        method: "DELETE",
-      });
-
-      setBooks((prev) => prev.filter((book) => book.id !== pk));
-    }
-    catch (error) {
-      console.error(error);
-    }
-  }
-
-  return (
-    <>
-      <h1>Book Website</h1>
-
-      <div>
-        <input type="text" placeholder="Book Title..." onChange={(e) => setTitle(e.target.value)} />
-        <input type="number" placeholder="Release Date..." onChange={(e) => setReleaseYear(e.target.value)} />
-        <button onClick={addBook}>Add Book</button>
-      </div>
-      {books.map((book, index) => (
-        <div key={index}>
-          <p>Title: {book.title}</p>
-          <p>Release Year: {book.release_year}</p>
-          <input type="text" placeholder="New Title..."
-            onChange={(e) => setNewTitle(e.target.value)} />
-          <button onClick={() => updateTitle(book.id, book.release_year)}> Change Title </button>
-          <button onClick={() => deleteBook(book.id)}>Delete</button>
-        </div>
-      ))}
-    </>
-  )
+            <div>
+                <input type="text" placeholder="Stock Symbol..." onChange={(e) => setSymbol(e.target.value)} />
+                <button onClick={addStock}>Follow</button>
+            </div>
+            {stocks.map((stock, index) => (
+                <div key={index}>
+                    <p>Symbol: {stock.symbol}</p>
+                    <p>Price: {stock.price}</p>
+                    <p>Change: {stock.change}</p>
+                    <button onClick={() => removeStock(stock.id)}>Unfollow</button>
+                </div>
+            ))}
+        </>
+    );
 }
-
-export default App
+export default App;
