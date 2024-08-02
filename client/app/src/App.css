@@ -40,3 +40,30 @@
 .read-the-docs {
   color: #888;
 }
+.search-container{
+  max-width: 270px;
+  display: flex;
+  flex-direction: column;
+}
+.dropdown{
+  background-color: #242424;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid white;
+}
+.dropdown:empty{
+  border: none;
+}
+.dropdown-row{
+  cursor: pointer;
+  text-align: start;
+  padding-left: 3px;
+  padding-right: 3px;
+  margin: 3px,0;
+}
+.dropdown-row:hover{
+  background-color: #646cff;
+}
+search-inner{
+  display: flex;
+}
