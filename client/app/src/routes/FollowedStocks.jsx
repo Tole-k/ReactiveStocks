@@ -1,27 +1,20 @@
 import { useEffect, useState } from 'react';
 import styled from "styled-components";
-import './App.css'
+import '../App.css';
 
-function App() {
+function FollowedStocks() {
     const [stocks, setStocks] = useState([]);
     const [symbol, setSymbol] = useState("");
     const [suggestions, setSuggestions] = useState([]);
-    const [enteredText, setEnteredText] = useState(''); 
+    const [enteredText, setEnteredText] = useState('');
 
     useEffect(() => {
-        fetchStocks();
+        //fetchStocks();
     }, []);
 
     const fetchStocks = async () => {
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/stocks/").then((response) => {
-                if (response.status === 403) {
-                    throw new Error("Token limit reached");
-                }
-                if (response.status === 204) {
-                    throw new Error("No followed stocks");
-                }
-            });
+            const response = await fetch("http://127.0.0.1:8000/api/stocks/");
             const data = await response.json();
             setStocks(data);
         } catch (error) {
@@ -37,10 +30,6 @@ function App() {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({ symbol }),
-            }).then((response) => { 
-                if (response.status === 403) {
-                    throw new Error("Token limit reached");
-                }
             });
             const data = await response.json();
             setStocks((prev) => [...prev, data]);
@@ -56,10 +45,6 @@ function App() {
             // eslint-disable-next-line no-unused-vars
             const response = await fetch(`http://127.0.0.1:8000/api/stocks/remove/${id}/`, {
                 method: "DELETE",
-            }).then((response) => {
-                if (response.status === 403) {
-                    throw new Error("Token limit reached");
-                }
             });
             setStocks((prev) => prev.filter((stock) => stock.id !== id));
         } catch (error) {
@@ -71,16 +56,14 @@ function App() {
         color: ${(props) => props.data === 0 ? "white" : props.data > 0 ? "green" : "red"};
     `;
     const fetchSuggestions = async (symbol) => {
-        try {
-            const response = await fetch(`http://127.0.0.1:8000/api/stocks/suggestions/${symbol}/`).then((response) => {
-                if (response.status === 403) {
-                    throw new Error("Token limit reached");
-                }
-            });
-            setSuggestions(await response.json());
-        } catch (error) {
-            alert(error);
-            console.log(error);
+        if (symbol !== "") {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/api/stocks/suggestions/${symbol}/`);
+                setSuggestions(await response.json());
+            } catch (error) {
+                alert(error);
+                console.log(error);
+            }
         }
     }
     const searchBarChange = (event) => {
@@ -97,7 +80,7 @@ function App() {
     }
     return (
         <>
-            <h1>Stock App</h1>
+            <h1>Stock Browser</h1>
             <div className='search-container'>
                 <div className='search-inner'>
                     <input type="text" placeholder="Stock Symbol..." value={enteredText} onChange={searchBarChange} />
@@ -109,16 +92,35 @@ function App() {
                     )) : null}
                 </div>
             </div>
-            {stocks.map((stock, index) => (
-                <div key={index}>
-                    <p>Symbol: {stock.symbol}</p>
-                    <p>Name: {stock.name}</p>
-                    <p>Price: {stock.price}</p>
-                    <Change data={stock.changesPercentage}>Change: {stock.changesPercentage}</Change>
-                    <button onClick={() => removeStock(stock.id)}>Unfollow</button>
-                </div>
-            ))}
+            <table className='stock-table'>
+                <thead>
+                    <td>Symbol</td>
+                    <td>Name</td>
+                    <td>Price</td>
+                    <td>Change</td>
+                    <td>%Change</td>
+                    <td>Volume</td>
+                    <td>Actions</td>
+                </thead>
+                {stocks.map((stock, index) => (
+                    <tr key={index} className='stock-item'>
+                        <td>{stock.symbol}</td>
+                        <td>{stock.name}</td>
+                        <td>{stock.price}</td>
+                        <td>
+                            <Change data={stock.change}>{stock.change}</Change>
+                        </td>
+                        <td>
+                            <Change data={stock.changesPercentage}>{stock.changesPercentage}</Change>
+                        </td>
+                        <td>{stock.volume}</td>
+                        <td>
+                            <button onClick={() => removeStock(stock.id)}>Unfollow</button>
+                        </td>
+                    </tr>
+                ))}
+            </table>
         </>
     );
 }
-export default App;
+export default FollowedStocks;

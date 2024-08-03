@@ -24,16 +24,16 @@ class Stock(models.Model):
     earningsAnnouncement = models.CharField(null=True, max_length=100)
     sharesOutstanding = models.IntegerField(null=True)
     timestamp = models.IntegerField(null=True)
-    
-    # open_price = models.FloatField(null=True)
-    # high = models.FloatField(null=True)
-    # low = models.FloatField(null=True)
-    # price = models.FloatField(null=True)
-    # volume = models.FloatField(null=True)
-    # latest_trading_day = models.DateField(null=True)
-    # previous_close = models.FloatField(null=True)
-    # change = models.FloatField(null=True)
-    # change_percent = models.FloatField(null=True)
+
+    def __str__(self):
+        return self.symbol
+
+
+class Position(models.Model):
+    symbol = models.CharField(null=True, max_length=10)
+    quantity = models.IntegerField(null=True)
+    average_price = models.FloatField(null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.symbol

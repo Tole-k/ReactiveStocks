@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Stock
+from .models import Position, Stock
 from .serializer import StockSerializer
 import requests
 from pandas.tseries.holiday import USFederalHolidayCalendar
@@ -14,10 +14,7 @@ APIKEY = 'smwtbHsasmvEoGzGfDTq5Wo5xcqVHQvu'
 def update(stock):
     symbol = stock.symbol
     data = requests.get(
-        f'https://financialmodelingprep.com/api/v3/quote/{symbol}?apikey={APIKEY}').json()
-    if data['Error Message']:
-        return None
-    data = data[0]
+        f'https://financialmodelingprep.com/api/v3/quote/{symbol}?apikey={APIKEY}').json()[0]
     stock.price = data['price']
     stock.changesPercentage = data['changesPercentage']
     stock.change = data['change']
@@ -41,13 +38,12 @@ def update(stock):
 
 
 @api_view(['GET'])
-def get_stocks(request):
+def get_followed_stocks(request):
     if not Stock.objects.exists():
         return Response(status=status.HTTP_204_NO_CONTENT)
     stocks = Stock.objects.all()
     for stock in stocks:
-        if update(stock) is None:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+        update(stock)
     serializedData = StockSerializer(Stock.objects.all(), many=True).data
     return Response(serializedData)
 
@@ -56,8 +52,6 @@ def get_stocks(request):
 def get_suggestions(request, symbol):
     data = requests.get(
         f'https://financialmodelingprep.com/api/v3/search?query={symbol}&limit=5&apikey={APIKEY}').json()
-    if data['Error Message']:
-        return Response(data['Error Message'], status=status.HTTP_403_FORBIDDEN)
     return Response(data)
 
 
@@ -66,8 +60,6 @@ def add_stock(request):
     symbol = request.data['symbol']
     data = requests.get(
         f'https://financialmodelingprep.com/api/v3/quote/{symbol}?apikey={APIKEY}').json()
-    if data['Error Message']:
-        return Response(data['Error Message'], status=status.HTTP_403_FORBIDDEN)
     serializer = StockSerializer(data=data[0])
     if serializer.is_valid():
         serializer.save()
@@ -82,4 +74,24 @@ def remove_stock(request, pk):
     except Stock.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
     stock.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(['POST'])
+def open_position(request):
+    symbol = request.data['symbol']
+    quantity = request.data['quantity']
+    average_price = request.data['average_price']
+    position = Position(symbol=symbol, quantity=quantity,
+                        average_price=average_price)
+    position.save()
+    return Response(status=status.HTTP_201_CREATED)
+
+@api_view(['DELETE'])
+def close_position(request, pk):
+    try:
+        position = Position.objects.get(pk=pk)
+    except Position.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    position.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
