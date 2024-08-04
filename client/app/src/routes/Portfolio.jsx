@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import styled from "styled-components";
-import '../App.css';
 export default function Portfolio() {
     const [positions, setPositions] = useState([]);
     const [symbol, setSymbol] = useState("");
@@ -11,36 +10,64 @@ export default function Portfolio() {
     const [enteredText, setEnteredText] = useState('');
 
     useEffect(() => {
-        //fetchStocks();
+        fetchPositions();
     }, []);
-
-    const openPosition = async () => {
+    const fetchPositions = async () => {
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/stocks/open/", {
+            const response = await fetch("http://127.0.0.1:8000/api/positions/");
+            const data = await response.json();
+            setPositions(data);
+        } catch (error) {
+
+            console.log(error);
+        }
+    }
+    const openPosition = async () => {
+        const positionData = {
+            symbol,
+            quantity,
+            average_price: price,
+            date
+        };
+        try {
+            const response = await fetch("http://127.0.0.1:8000/api/positions/open/", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ symbol, quantity, price, date }),
+                body: JSON.stringify({ positionData }),
             });
             const data = await response.json();
+            if (positions.some((position) => position.symbol === symbol)) {
+                setPositions((prev) => prev.map((position) => {
+                    if (position.symbol === data.symbol) {
+                        return {
+                            data
+                        };
+                    }
+                    return position;
+                }));
+            }
+            else {
+                setPositions((prev) => [...prev, data]);
+            }
             setPositions((prev) => [...prev, data]);
             setEnteredText("");
             setSuggestions([]);
         } catch (error) {
-            alert(error);
+
             console.log(error);
         }
     };
     const closePosition = async (id) => {
         try {
             // eslint-disable-next-line no-unused-vars
-            const response = await fetch(`http://127.0.0.1:8000/api/stocks/close/${id}/`, {
+            const response = await fetch(`http://127.0.0.1:8000/api/positions/close/${id}/`, {
                 method: "DELETE",
             });
             setPositions((prev) => prev.filter((stock) => stock.id !== id));
         } catch (error) {
-            alert(error);
+
             console.log(error);
         }
     }
@@ -53,7 +80,7 @@ export default function Portfolio() {
                 const response = await fetch(`http://127.0.0.1:8000/api/stocks/suggestions/${symbol}/`);
                 setSuggestions(await response.json());
             } catch (error) {
-                alert(error);
+
                 console.log(error);
             }
         }
@@ -69,21 +96,61 @@ export default function Portfolio() {
     const suggestionsClick = (symbol) => {
         setSymbol(symbol);
         setEnteredText(symbol);
+        setSuggestions([]);
     }
     return (
         <>
             <h1>Portfolio</h1>
-            <div className='search-container'>
-                <div className='search-inner'>
-                    <input type="text" placeholder="Stock Symbol..." value={enteredText} onChange={searchBarChange} />
-                    <button onClick={openPosition}>Follow</button>
-                </div>
-                <div className='dropdown'>
-                    {suggestions.length ? suggestions.map((suggestion, index) => (
-                        <div key={index} className='dropdown-row' onClick={() => suggestionsClick(suggestion.symbol)}>{suggestion.symbol} ({suggestion.name})</div>
-                    )) : null}
-                </div>
+            <div className='portfolio-container'>
+                <form className='portfolio-form'>
+                    <div>
+                        <label>
+                            Symbol:
+                            <br></br>
+                            <input type="text" placeholder="Stock Symbol..." value={enteredText} onChange={searchBarChange} />
+                        </label>
+                        <div className='dropdown' id='portfolio'>
+                            {suggestions.length ? suggestions.map((suggestion, index) => (
+                                <div key={index} className='dropdown-row' onClick={() => suggestionsClick(suggestion.symbol)}>{suggestion.symbol} ({suggestion.name})</div>
+                            )) : null}
+                        </div>
+                    </div>
+                    <label>
+                        Quantity:
+                        <br></br>
+                        <input type="number" placeholder="0" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+                    </label>
+                    <label>
+                        Price:
+                        <br></br>
+                        <input type="number" placeholder='0' value={price} onChange={(e) => setPrice(e.target.value)} />
+                    </label>
+                    <label>
+                        Date:
+                        <br></br>
+                        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+                    </label>
+                    <button className='buy' onClick={openPosition}>Open</button>
+                </form>
             </div>
+            <table className='stock-table'>
+                <thead>
+                    <td>Symbol</td>
+                    <td>Volume</td>
+                    <td>Average Price</td>
+                    <td>Close</td>
+                </thead>
+                {positions.map((position, index) => (
+                    <tr key={index} className='stock-item'>
+                        <td>{position.symbol}</td>
+                        <td>{position.quantity}</td>
+                        <td>{position.average_price}</td>
+                        <td>
+                            <button className='sell' onClick={() => closePosition(position.id)}>Close</button>
+                        </td>
+                    </tr>
+                ))}
+            </table>
         </>
     )
 }

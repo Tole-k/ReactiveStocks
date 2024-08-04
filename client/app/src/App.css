@@ -6,11 +6,18 @@
   margin-top: 10px;
   height: 200px;
 }
-.dropdown{
+#portfolio.dropdown{
   display: flex;
   flex-direction: column;
   height: 200px;
   overflow-y: auto;
+  max-width: 250px;
+}
+#followed.dropdown{
+    display: flex;
+    flex-direction: column;
+    height: 200px;
+    overflow-y: auto;
 }
 .dropdown:empty{
   border: none;
@@ -44,4 +51,38 @@ table.stock-table td{
 }
 h1{
   text-align: center;
+}
+.portfolio-form{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+button.buy{
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  max-height: 45px;
+  padding: 10px 24px;
+  margin-left: 10;
+  margin-top: 20px;
+}
+button.sell{
+  background-color: #f44336;
+  color: white;
+  border: none;
+  cursor: pointer;
+  max-height: 45px;
+  padding: 10px 24px;
+}
+.portfolio-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 30px;
+    height: 200px;
+}
+label{
+  margin: 5px;
 }

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import styled from "styled-components";
-import '../App.css';
 
 function FollowedStocks() {
     const [stocks, setStocks] = useState([]);
@@ -9,7 +8,7 @@ function FollowedStocks() {
     const [enteredText, setEnteredText] = useState('');
 
     useEffect(() => {
-        //fetchStocks();
+        fetchStocks();
     }, []);
 
     const fetchStocks = async () => {
@@ -18,7 +17,7 @@ function FollowedStocks() {
             const data = await response.json();
             setStocks(data);
         } catch (error) {
-            alert(error);
+            
             console.log(error);
         }
     }
@@ -36,7 +35,7 @@ function FollowedStocks() {
             setEnteredText("");
             setSuggestions([]);
         } catch (error) {
-            alert(error);
+            
             console.log(error);
         }
     };
@@ -48,7 +47,7 @@ function FollowedStocks() {
             });
             setStocks((prev) => prev.filter((stock) => stock.id !== id));
         } catch (error) {
-            alert(error);
+            
             console.log(error);
         }
     }
@@ -61,7 +60,7 @@ function FollowedStocks() {
                 const response = await fetch(`http://127.0.0.1:8000/api/stocks/suggestions/${symbol}/`);
                 setSuggestions(await response.json());
             } catch (error) {
-                alert(error);
+                
                 console.log(error);
             }
         }
@@ -77,6 +76,7 @@ function FollowedStocks() {
     const suggestionsClick = (symbol) => {
         setSymbol(symbol);
         setEnteredText(symbol);
+        setSuggestions([]);
     }
     return (
         <>
@@ -86,7 +86,7 @@ function FollowedStocks() {
                     <input type="text" placeholder="Stock Symbol..." value={enteredText} onChange={searchBarChange} />
                     <button onClick={addStock}>Follow</button>
                 </div>
-                <div className='dropdown'>
+                <div className='dropdown' id='followed'>
                     {suggestions.length ? suggestions.map((suggestion, index) => (
                         <div key={index} className='dropdown-row' onClick={() => suggestionsClick(suggestion.symbol)}>{suggestion.symbol} ({suggestion.name})</div>
                     )) : null}

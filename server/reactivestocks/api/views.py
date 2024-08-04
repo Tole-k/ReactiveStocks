@@ -2,7 +2,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Position, Stock
-from .serializer import StockSerializer
+from .serializer import StockSerializer, PositionSerializer
 import requests
 from pandas.tseries.holiday import USFederalHolidayCalendar
 from pandas.tseries.offsets import CustomBusinessDay
@@ -77,15 +77,28 @@ def remove_stock(request, pk):
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+@api_view(['GET'])
+def get_positions(request):
+    return Response(PositionSerializer(Position.objects.all(), many=True).data)
+
+
 @api_view(['POST'])
 def open_position(request):
-    symbol = request.data['symbol']
-    quantity = request.data['quantity']
-    average_price = request.data['average_price']
-    position = Position(symbol=symbol, quantity=quantity,
-                        average_price=average_price)
-    position.save()
-    return Response(status=status.HTTP_201_CREATED)
+    data = request.data['positionData']
+    position = Position.objects.filter(
+        symbol=data['symbol']).first()
+    if position is not None:
+        position.average_price = (position.average_price * position.quantity +
+                                  float(data['average_price']) * float(data['quantity']))/(position.quantity + float(data['quantity']))
+        position.quantity += float(data['quantity'])
+        position.save()
+        return Response(PositionSerializer(position).data, status=status.HTTP_201_CREATED)
+    serializer = PositionSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['DELETE'])
 def close_position(request, pk):
