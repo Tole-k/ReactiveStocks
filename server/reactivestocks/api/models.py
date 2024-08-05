@@ -24,16 +24,18 @@ class Stock(models.Model):
     earningsAnnouncement = models.CharField(null=False, max_length=100)
     sharesOutstanding = models.IntegerField(null=False)
     timestamp = models.IntegerField(null=False)
+    owned = models.BooleanField(null=False, default=False)
+    followed = models.BooleanField(null=False, default=False)
 
     def __str__(self):
-        return self.symbol
+        return self.name
 
 
 class Position(models.Model):
-    symbol = models.CharField(null=False, max_length=10)
+    Stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
     quantity = models.FloatField(null=False)
     average_price = models.FloatField(null=False)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.symbol
+        return self.Stock.name

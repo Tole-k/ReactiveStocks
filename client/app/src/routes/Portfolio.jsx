@@ -137,14 +137,18 @@ export default function Portfolio() {
                 <thead>
                     <td>Symbol</td>
                     <td>Volume</td>
-                    <td>Average Price</td>
+                    <td>Market Value</td>
+                    <td>Open Price</td>
+                    <td>Market Price</td>
                     <td>Close</td>
                 </thead>
                 {positions.map((position, index) => (
                     <tr key={index} className='stock-item'>
                         <td>{position.symbol}</td>
                         <td>{position.quantity}</td>
-                        <td>{position.average_price}</td>
+                        <td>Placeholder</td>
+                        <td>{Math.round(position.average_price * 100) / 100}</td>
+                        <td>Placeholder</td>
                         <td>
                             <button className='sell' onClick={() => closePosition(position.id)}>Close</button>
                         </td>
