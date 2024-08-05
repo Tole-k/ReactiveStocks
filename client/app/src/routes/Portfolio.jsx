@@ -14,13 +14,13 @@ export default function Portfolio() {
     }, []);
     const fetchPositions = async () => {
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/positions/");
+            const response = await fetch("http://127.0.0.1:8000/portfolio/");
             const data = await response.json();
             setPositions(data);
         } catch (error) {
-
             console.log(error);
         }
+        console.log(positions);
     }
     const openPosition = async () => {
         const positionData = {
@@ -30,7 +30,7 @@ export default function Portfolio() {
             date
         };
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/positions/open/", {
+            const response = await fetch("http://127.0.0.1:8000/portfolio/open/", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -62,7 +62,7 @@ export default function Portfolio() {
     const closePosition = async (id) => {
         try {
             // eslint-disable-next-line no-unused-vars
-            const response = await fetch(`http://127.0.0.1:8000/api/positions/close/${id}/`, {
+            const response = await fetch(`http://127.0.0.1:8000/portfolio/close/${id}/`, {
                 method: "DELETE",
             });
             setPositions((prev) => prev.filter((stock) => stock.id !== id));
@@ -77,7 +77,7 @@ export default function Portfolio() {
     const fetchSuggestions = async (symbol) => {
         if (symbol !== "") {
             try {
-                const response = await fetch(`http://127.0.0.1:8000/api/stocks/suggestions/${symbol}/`);
+                const response = await fetch(`http://127.0.0.1:8000/follow/suggestions/${symbol}/`);
                 setSuggestions(await response.json());
             } catch (error) {
 
@@ -137,18 +137,24 @@ export default function Portfolio() {
                 <thead>
                     <td>Symbol</td>
                     <td>Volume</td>
+                    <td>Purchase Value</td>
                     <td>Market Value</td>
                     <td>Open Price</td>
                     <td>Market Price</td>
+                    <td>Net Profit/Loss</td>
+                    <td>Net P/L %</td>
                     <td>Close</td>
                 </thead>
                 {positions.map((position, index) => (
                     <tr key={index} className='stock-item'>
-                        <td>{position.symbol}</td>
+                        <td>{position.stock.symbol}</td>
                         <td>{position.quantity}</td>
-                        <td>Placeholder</td>
+                        <td>{position.average_price*position.quantity}</td>
+                        <td>{position.stock.price * position.quantity}</td>
                         <td>{Math.round(position.average_price * 100) / 100}</td>
-                        <td>Placeholder</td>
+                        <td>{position.stock.price}</td>
+                        <td>{Math.round((position.stock.price - position.average_price) * position.quantity * 100) / 100}</td>
+                        <td>{Math.round(((position.stock.price - position.average_price) * position.quantity) / (position.average_price * position.quantity)*100)/100}</td>
                         <td>
                             <button className='sell' onClick={() => closePosition(position.id)}>Close</button>
                         </td>

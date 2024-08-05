@@ -13,7 +13,7 @@ function FollowedStocks() {
 
     const fetchStocks = async () => {
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/stocks/");
+            const response = await fetch("http://127.0.0.1:8000/follow/");
             const data = await response.json();
             setStocks(data);
         } catch (error) {
@@ -23,7 +23,7 @@ function FollowedStocks() {
     }
     const addStock = async () => {
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/stocks/add/", {
+            const response = await fetch("http://127.0.0.1:8000/follow/add/", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -42,7 +42,7 @@ function FollowedStocks() {
     const removeStock = async (id) => {
         try {
             // eslint-disable-next-line no-unused-vars
-            const response = await fetch(`http://127.0.0.1:8000/api/stocks/remove/${id}/`, {
+            const response = await fetch(`http://127.0.0.1:8000/follow/remove/${id}/`, {
                 method: "DELETE",
             });
             setStocks((prev) => prev.filter((stock) => stock.id !== id));
@@ -57,7 +57,7 @@ function FollowedStocks() {
     const fetchSuggestions = async (symbol) => {
         if (symbol !== "") {
             try {
-                const response = await fetch(`http://127.0.0.1:8000/api/stocks/suggestions/${symbol}/`);
+                const response = await fetch(`http://127.0.0.1:8000/follow/suggestions/${symbol}/`);
                 setSuggestions(await response.json());
             } catch (error) {
                 

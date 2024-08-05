@@ -3,7 +3,7 @@ from django.urls import path
 
 
 urlpatterns = [
-    path('positions/', get_positions, name='get_positions'),
-    path('positions/open/', open_position, name='open_position'),
-    path('positions/close/<int:pk>/', close_position, name='close_position')
+    path('', get_positions, name='get_positions'),
+    path('open/', open_position, name='open_position'),
+    path('close/<int:pk>/', close_position, name='close_position')
 ]

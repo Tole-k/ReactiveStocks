@@ -16,7 +16,7 @@ def get_positions(request):
         return Response(status=status.HTTP_204_NO_CONTENT)
     positions = Position.objects.all()
     for position in positions:
-        stock = position.Stock
+        stock = position.stock
         update(stock)
     serializedData = PositionSerializer(positions, many=True).data
     return Response(serializedData)
@@ -25,17 +25,17 @@ def get_positions(request):
 @api_view(['POST'])
 def open_position(request):
     data = request.data['positionData']
+    symbol = data['symbol']
     stock = Stock.objects.filter(symbol=data['symbol']).first()
-    del data['symbol']
     if stock is None:
         stock_data = requests.get(
             f'https://financialmodelingprep.com/api/v3/quote/{symbol}?apikey={APIKEY}').json()
         stock_data[0]['owned'] = True
-        serializer = StockSerializer(data=data[0])
+        serializer = StockSerializer(data=stock_data[0])
         if serializer.is_valid():
             serializer.save()
             stock = Stock.objects.filter(symbol=data['symbol']).first()
-            data['Stock'] = stock
+            data['stock'] = stock.id  # type: ignore
             serializer = PositionSerializer(data=data)
             if serializer.is_valid():
                 serializer.save()
@@ -43,13 +43,14 @@ def open_position(request):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     else:
-        position = Position.objects.filter(Stock=stock).first()
+        position = Position.objects.filter(stock=stock).first()
         if position is not None:
             position.average_price = (position.average_price * position.quantity +
                                       float(data['average_price']) * float(data['quantity']))/(position.quantity + float(data['quantity']))
             position.quantity += float(data['quantity'])
             position.save()
             return Response(PositionSerializer(position).data, status=status.HTTP_201_CREATED)
+        data['stock'] = stock.id  # type: ignore
         serializer = PositionSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
@@ -65,7 +66,7 @@ def close_position(request, pk):
         position = Position.objects.get(pk=pk)
     except Position.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
-    position.Stock.owned = False
-    position.Stock.save()
+    position.stock.owned = False
+    position.stock.save()
     position.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
