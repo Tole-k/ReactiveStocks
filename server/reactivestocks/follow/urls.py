@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import get_followed_stocks, add_stock, remove_stock, get_suggestions, open_position, close_position, get_positions
+from .views import get_followed_stocks, add_stock, remove_stock, get_suggestions
 
 urlpatterns = [
     path('stocks/', get_followed_stocks, name='get_stocks'),
@@ -7,7 +7,5 @@ urlpatterns = [
     path('stocks/remove/<int:pk>/', remove_stock, name='remove_stock'),
     path('stocks/suggestions/<str:symbol>/',
          get_suggestions, name='get_suggestions'),
-    path('positions/', get_positions, name='get_positions'),
-    path('positions/open/', open_position, name='open_position'),
-    path('positions/close/<int:pk>/', close_position, name='close_position')
+
 ]
