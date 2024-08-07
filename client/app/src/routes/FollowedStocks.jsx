@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import styled from "styled-components";
+import Nav from 'react-bootstrap/Nav';
 
 function FollowedStocks() {
     const [stocks, setStocks] = useState([]);
@@ -145,7 +146,11 @@ function FollowedStocks() {
                         </td>
                         <td>{stock.volume}</td>
                         <td>
-                            <button onClick={() => removeStock(stock.id)}>Unfollow</button>
+                            <button>
+                                <Nav.Link href="/portfolio">
+                                    Portfolio
+                                </Nav.Link>
+                            </button>
                         </td>
                     </tr>
                 ))}
