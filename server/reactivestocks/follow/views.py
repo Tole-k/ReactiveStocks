@@ -8,40 +8,41 @@ import requests
 APIKEY = 'smwtbHsasmvEoGzGfDTq5Wo5xcqVHQvu'
 
 
-def update(stock):
-    symbol = stock.symbol
+def update(stocks):
+    symbols = ','.join([stock.symbol for stock in stocks])
     data = requests.get(
-        f'https://financialmodelingprep.com/api/v3/quote/{symbol}?apikey={APIKEY}').json()[0]
-    stock.price = data['price']
-    stock.changesPercentage = data['changesPercentage']
-    stock.change = data['change']
-    stock.dayLow = data['dayLow']
-    stock.dayHigh = data['dayHigh']
-    stock.yearHigh = data['yearHigh']
-    stock.yearLow = data['yearLow']
-    stock.marketCap = data['marketCap']
-    stock.priceAvg50 = data['priceAvg50']
-    stock.priceAvg200 = data['priceAvg200']
-    stock.volume = data['volume']
-    stock.avgVolume = data['avgVolume']
-    stock.open = data['open']
-    stock.previousClose = data['previousClose']
-    stock.eps = data['eps']
-    stock.pe = data['pe']
-    stock.earningsAnnouncement = data['earningsAnnouncement']
-    stock.sharesOutstanding = data['sharesOutstanding']
-    stock.timestamp = data['timestamp']
-    stock.save()
+        f'https://financialmodelingprep.com/api/v3/quote/{symbols}?apikey={APIKEY}').json()
+    for i, stock in enumerate(stocks):
+        stock.price = data[i]['price']
+        stock.changesPercentage = data[i]['changesPercentage']
+        stock.change = data[i]['change']
+        stock.dayLow = data[i]['dayLow']
+        stock.dayHigh = data[i]['dayHigh']
+        stock.yearHigh = data[i]['yearHigh']
+        stock.yearLow = data[i]['yearLow']
+        stock.marketCap = data[i]['marketCap']
+        stock.priceAvg50 = data[i]['priceAvg50']
+        stock.priceAvg200 = data[i]['priceAvg200']
+        stock.volume = data[i]['volume']
+        stock.avgVolume = data[i]['avgVolume']
+        stock.open = data[i]['open']
+        stock.previousClose = data[i]['previousClose']
+        stock.eps = data[i]['eps']
+        stock.pe = data[i]['pe']
+        stock.earningsAnnouncement = data[i]['earningsAnnouncement']
+        stock.sharesOutstanding = data[i]['sharesOutstanding']
+        stock.timestamp = data[i]['timestamp']
+        stock.save()
 
 
 @api_view(['GET'])
 def get_followed_stocks(request):
     if not Stock.objects.exists():
         return Response(status=status.HTTP_204_NO_CONTENT)
-    stocks = Stock.objects.filter(followed=True)
-    for stock in stocks:
-        update(stock)
-    serializedData = StockSerializer(Stock.objects.all(), many=True).data
+    stocks = Stock.objects.all()
+    update(stocks)
+    serializedData = StockSerializer(
+        Stock.objects.all(), many=True).data
     return Response(serializedData)
 
 
@@ -65,6 +66,7 @@ def add_stock(request):
     else:
         data = requests.get(
             f'https://financialmodelingprep.com/api/v3/quote/{symbol}?apikey={APIKEY}').json()
+        print(data)
         data[0]['followed'] = True
         serializer = StockSerializer(data=data[0])
         if serializer.is_valid():

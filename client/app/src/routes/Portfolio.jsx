@@ -153,8 +153,16 @@ export default function Portfolio() {
                         <td>{position.stock.price * position.quantity}</td>
                         <td>{Math.round(position.average_price * 100) / 100}</td>
                         <td>{position.stock.price}</td>
-                        <td>{Math.round((position.stock.price - position.average_price) * position.quantity * 100) / 100}</td>
-                        <td>{Math.round(((position.stock.price - position.average_price) * position.quantity) / (position.average_price * position.quantity)*100)/100}</td>
+                        <td>
+                            <Change data={(position.stock.price - position.average_price) * position.quantity}>
+                                {Math.round((position.stock.price - position.average_price) * position.quantity * 100) / 100}
+                            </Change>
+                        </td>
+                        <td>
+                            <Change data={((position.stock.price - position.average_price) * position.quantity) / (position.average_price * position.quantity)}>
+                                {Math.round(((position.stock.price - position.average_price) * position.quantity) / (position.average_price * position.quantity) * 100) / 100}
+                            </Change>
+                        </td>
                         <td>
                             <button className='sell' onClick={() => closePosition(position.id)}>Close</button>
                         </td>

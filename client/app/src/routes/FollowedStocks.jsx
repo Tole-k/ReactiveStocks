@@ -92,6 +92,7 @@ function FollowedStocks() {
                     )) : null}
                 </div>
             </div>
+            <h3>Followed Stocks</h3>
             <table className='stock-table'>
                 <thead>
                     <td>Symbol</td>
@@ -102,7 +103,36 @@ function FollowedStocks() {
                     <td>Volume</td>
                     <td>Actions</td>
                 </thead>
-                {stocks.map((stock, index) => (
+                {stocks.filter(stock => stock.followed).map((stock, index) => (
+                    <tr key={index} className='stock-item'>
+                        <td>{stock.symbol}</td>
+                        <td>{stock.name}</td>
+                        <td>{stock.price}</td>
+                        <td>
+                            <Change data={stock.change}>{stock.change}</Change>
+                        </td>
+                        <td>
+                            <Change data={stock.changesPercentage}>{stock.changesPercentage}</Change>
+                        </td>
+                        <td>{stock.volume}</td>
+                        <td>
+                            <button onClick={() => removeStock(stock.id)}>Unfollow</button>
+                        </td>
+                    </tr>
+                ))}
+            </table>
+            <h3>Owned Stocks</h3>
+            <table className='stock-table'>
+                <thead>
+                    <td>Symbol</td>
+                    <td>Name</td>
+                    <td>Price</td>
+                    <td>Change</td>
+                    <td>%Change</td>
+                    <td>Volume</td>
+                    <td>Actions</td>
+                </thead>
+                {stocks.filter(stock => stock.owned).map((stock, index) => (
                     <tr key={index} className='stock-item'>
                         <td>{stock.symbol}</td>
                         <td>{stock.name}</td>
