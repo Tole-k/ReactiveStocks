@@ -1,3 +1,5 @@
+import time
+from turtle import pos, st
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -15,9 +17,8 @@ def get_positions(request):
     if not Position.objects.exists():
         return Response(status=status.HTTP_204_NO_CONTENT)
     positions = Position.objects.all()
-    for position in positions:
-        stock = position.stock
-        update(stock)
+    stocks = [position.stock for position in positions]
+    update(stocks)
     serializedData = PositionSerializer(positions, many=True).data
     return Response(serializedData)
 
@@ -27,31 +28,32 @@ def open_position(request):
     data = request.data['positionData']
     print("Received data:", data)
     symbol = data['symbol']
-    stock = Stock.objects.filter(symbol=data['symbol']).first()
+    stock = Stock.objects.get(symbol=symbol) if Stock.objects.filter(symbol=symbol).exists() else None
     print("Stock found:", stock)
     if stock is None:
         stock_data = requests.get(
-            f'https://financialmodelingprep.com/api/v3/quote/{symbol}?apikey={APIKEY}').json()
-        stock_data[0]['owned'] = True
-        serializer = StockSerializer(data=stock_data[0])
+            f'https://financialmodelingprep.com/api/v3/quote/{symbol}?apikey={APIKEY}').json()[0]
+        stock_data['owned'] = True
+        serializer = StockSerializer(data=stock_data)
         if serializer.is_valid():
             serializer.save()
-            stock = Stock.objects.filter(symbol=data['symbol']).first()
+            stock = Stock.objects.get(symbol=symbol)
             data['stock'] = stock
-            data['stock_id'] = stock.id  # type: ignore
             print("Stock created and data updated:", data)
-            serializer = PositionSerializer(data=data)
-            if serializer.is_valid():
-                print("Position serializer valid:", serializer.validated_data)
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            print("Position serializer errors:", serializer.errors)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            position = Position(stock=data['stock'], quantity=float(data['quantity']), average_price=float(data['average_price']), timestamp=data['timestamp'])
+            position.save()
+            return Response(position, status=status.HTTP_201_CREATED)
+            # serializer = PositionSerializer(data=data)
+            # if serializer.is_valid():
+            #     print("Position serializer valid:", serializer.validated_data)
+            #     serializer.save()
+            #     return Response(serializer.data, status=status.HTTP_201_CREATED)
+            # print("Position serializer errors:", serializer.errors)
+            # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         print("Stock serializer errors:", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     else:
         data['stock'] = stock
-        data['stock_id'] = stock.id  # type: ignore
         position = Position.objects.filter(stock=stock).first()
         if position is not None:
             position.average_price = (position.average_price * position.quantity +
@@ -60,15 +62,18 @@ def open_position(request):
             position.save()
             return Response(PositionSerializer(position).data, status=status.HTTP_201_CREATED)
         print("Existing stock and data updated:", data)
-        serializer = PositionSerializer(data=data)
-        if serializer.is_valid():
-            print("Position serializer valid:", serializer.validated_data)
-            serializer.save()
-            stock.owned = True
-            stock.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        print("Position serializer errors:", serializer.errors)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        position = Position(stock=data['stock'], quantity=float(data['quantity']), average_price=float(data['average_price']), timestamp=data['timestamp'])
+        position.save()
+        return Response(position, status=status.HTTP_201_CREATED)
+        # serializer = PositionSerializer(data=data)
+        # if serializer.is_valid():
+        #     print("Position serializer valid:", serializer.validated_data)
+        #     serializer.save()
+        #     stock.owned = True
+        #     stock.save()
+        #     return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # print("Position serializer errors:", serializer.errors)
+        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['DELETE'])

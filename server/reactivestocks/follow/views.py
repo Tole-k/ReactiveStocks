@@ -40,6 +40,7 @@ def get_followed_stocks(request):
     if not Stock.objects.exists():
         return Response(status=status.HTTP_204_NO_CONTENT)
     stocks = Stock.objects.all()
+    print(stocks)
     update(stocks)
     serializedData = StockSerializer(
         Stock.objects.all(), many=True).data
