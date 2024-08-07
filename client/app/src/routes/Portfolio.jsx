@@ -10,18 +10,18 @@ export default function Portfolio() {
     const [enteredText, setEnteredText] = useState('');
 
     useEffect(() => {
-        fetchPositions();
-    }, []);
-    const fetchPositions = async () => {
-        try {
-            const response = await fetch("http://127.0.0.1:8000/portfolio/");
-            const data = await response.json();
-            setPositions(data);
-        } catch (error) {
-            console.log(error);
+        const fetchPositions = async () => {
+            try {
+                const response = await fetch("http://127.0.0.1:8000/portfolio/");
+                const data = await response.json();
+                setPositions(data);
+            } catch (error) {
+                console.log(error);
+            }
+            console.log(positions);
         }
-        console.log(positions);
-    }
+        fetchPositions();
+    }, [positions]);
     const openPosition = async () => {
         const positionData = {
             symbol,
