@@ -9,7 +9,6 @@ APIKEY = 'smwtbHsasmvEoGzGfDTq5Wo5xcqVHQvu'
 
 
 def update(stocks):
-    print(stocks)
     if len(stocks) == 0:
         return
     symbols = ','.join([stock.symbol for stock in stocks])

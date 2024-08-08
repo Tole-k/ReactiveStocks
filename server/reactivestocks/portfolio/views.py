@@ -37,7 +37,7 @@ def open_position(request):
             serializer.save()
             stock = Stock.objects.get(symbol=symbol)
             data['stock'] = stock
-            position = Position(stock=data['stock'], quantity=float(data['quantity']), average_price=float(data['average_price']), timestamp=data['timestamp'])
+            position = Position(stock=data['stock'], quantity=float(data['quantity']), average_price=float(data['average_price']), timestamp=data['date'])
             position.save()
             return Response(position, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -61,13 +61,9 @@ def close_position(request, pk):
         position = Position.objects.get(pk=pk)
     except Position.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
-    print(position.stock)
-    print(position.stock.followed)
-    if position.stock.followed:
-        position.stock.owned = False
-        print(position.stock.owned)
-        position.stock.save()
-    else:
+    if not position.stock.followed:
         position.stock.delete()
+    position.stock.owned = False
+    position.stock.save()
     position.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
