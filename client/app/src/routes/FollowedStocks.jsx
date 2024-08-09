@@ -11,12 +11,12 @@ function FollowedStocks() {
 
     useEffect(() => {
         fetchStocks();
-        
     }, []);
 
     const fetchStocks = async () => {
         try {
             if (Date.now() - lastFetch < 10000) {
+                console.log("too soon");
                 return;
             }
             console.log("fetching stocks");

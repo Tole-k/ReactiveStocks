@@ -39,7 +39,7 @@ def open_position(request):
             data['stock'] = stock
             position = Position(stock=data['stock'], quantity=float(data['quantity']), average_price=float(data['average_price']), timestamp=data['date'])
             position.save()
-            return Response(position, status=status.HTTP_201_CREATED)
+            return Response(PositionSerializer(position).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     else:
         data['stock'] = stock
@@ -52,7 +52,7 @@ def open_position(request):
             return Response(PositionSerializer(position).data, status=status.HTTP_201_CREATED)
         position = Position(stock=data['stock'], quantity=float(data['quantity']), average_price=float(data['average_price']), timestamp=data['date'])
         position.save()
-        return Response(position, status=status.HTTP_201_CREATED)
+        return Response(PositionSerializer(position).data, status=status.HTTP_201_CREATED)
 
 
 @api_view(['DELETE'])

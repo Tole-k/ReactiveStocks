@@ -18,13 +18,14 @@ export default function Portfolio() {
     const fetchStocks = async () => {
         try {
             if (Date.now() - lastFetch < 10000) {
+                console.log("too soon");
                 return;
             }
             console.log("fetching stocks");
+            setLastFetch(Date.now());
             const response = await fetch("http://127.0.0.1:8000/portfolio/");
             const data = await response.json();
             setPositions(data);
-            setLastFetch(Date.now());
         } catch (error) {
 
             console.log(error);
