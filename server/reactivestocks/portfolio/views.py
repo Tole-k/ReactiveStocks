@@ -61,8 +61,6 @@ def close_position(request, pk):
         position = Position.objects.get(pk=pk)
     except Position.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
-    if not position.stock.followed:
-        position.stock.delete()
     position.stock.owned = False
     position.stock.save()
     position.delete()

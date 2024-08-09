@@ -8,6 +8,7 @@ export default function Portfolio() {
     const [date, setDate] = useState("");
     const [suggestions, setSuggestions] = useState([]);
     const [enteredText, setEnteredText] = useState('');
+    const [lastFetch, setLastFetch] = useState(0);
 
 
     useEffect(() => {
@@ -16,9 +17,14 @@ export default function Portfolio() {
 
     const fetchStocks = async () => {
         try {
+            if (Date.now() - lastFetch < 10000) {
+                return;
+            }
+            console.log("fetching stocks");
             const response = await fetch("http://127.0.0.1:8000/portfolio/");
             const data = await response.json();
             setPositions(data);
+            setLastFetch(Date.now());
         } catch (error) {
 
             console.log(error);
@@ -162,7 +168,7 @@ export default function Portfolio() {
                         </td>
                         <td>
                             <Change data={((position.stock.price - position.average_price) * position.quantity) / (position.average_price * position.quantity)}>
-                                {Math.round(((position.stock.price - position.average_price) * position.quantity) / (position.average_price * position.quantity) * 100) / 100}
+                                {Math.round(((position.stock.price - position.average_price) * position.quantity) / (position.average_price * position.quantity) * 10000) / 100}
                             </Change>
                         </td>
                         <td>

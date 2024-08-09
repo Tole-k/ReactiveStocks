@@ -15,6 +15,9 @@ def update(stocks):
     data = requests.get(
         f'https://financialmodelingprep.com/api/v3/quote/{symbols}?apikey={APIKEY}').json()
     for i, stock in enumerate(stocks):
+        if (not stock.followed) and (not stock.owned):
+            stock.delete()
+            continue
         stock.price = data[i]['price']
         stock.changesPercentage = data[i]['changesPercentage']
         stock.change = data[i]['change']
@@ -83,9 +86,6 @@ def remove_stock(request, pk):
         stock = Stock.objects.get(pk=pk)
     except Stock.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
-    if not stock.owned:
-        stock.delete()
-    else:
-        stock.followed = False
-        stock.save()
+    stock.followed = False
+    stock.save()
     return Response(status=status.HTTP_204_NO_CONTENT)

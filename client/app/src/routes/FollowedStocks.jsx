@@ -7,16 +7,23 @@ function FollowedStocks() {
     const [symbol, setSymbol] = useState("");
     const [suggestions, setSuggestions] = useState([]);
     const [enteredText, setEnteredText] = useState('');
+    const [lastFetch, setLastFetch] = useState(0);
 
     useEffect(() => {
         fetchStocks();
+        
     }, []);
 
     const fetchStocks = async () => {
         try {
+            if (Date.now() - lastFetch < 10000) {
+                return;
+            }
+            console.log("fetching stocks");
             const response = await fetch("http://127.0.0.1:8000/follow/");
             const data = await response.json();
             setStocks(data);
+            setLastFetch(Date.now());
         } catch (error) {
             
             console.log(error);
