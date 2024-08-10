@@ -12,25 +12,24 @@ export default function Portfolio() {
 
 
     useEffect(() => {
-        fetchStocks();
-    }, []);
-
-    const fetchStocks = async () => {
-        try {
-            if (Date.now() - lastFetch < 10000) {
-                console.log("too soon");
-                return;
+        const fetchStocks = async () => {
+            try {
+                if (Date.now() - lastFetch < 10000) {
+                    console.log("too soon");
+                    return;
+                }
+                console.log("fetching stocks");
+                setLastFetch(Date.now());
+                const response = await fetch("http://127.0.0.1:8000/portfolio/");
+                const data = await response.json();
+                setPositions(data);
+            } catch (error) {
+                console.log(error);
             }
-            console.log("fetching stocks");
-            setLastFetch(Date.now());
-            const response = await fetch("http://127.0.0.1:8000/portfolio/");
-            const data = await response.json();
-            setPositions(data);
-        } catch (error) {
+        };
+        fetchStocks();
+    }, [lastFetch]);
 
-            console.log(error);
-        }
-    }
     const openPosition = async () => {
         const positionData = {
             symbol,
@@ -80,9 +79,8 @@ export default function Portfolio() {
             console.log(error);
         }
     }
-    const Change = styled.p`
-        color: ${(props) => props.data === 0 ? "white" : props.data > 0 ? "green" : "red"};
-    `;
+    // eslint-disable-next-line react/prop-types
+    const Change = styled.p`color: ${(props) => props.data === 0 ? "white" : props.data > 0 ? "green" : "red"};`;
     const fetchSuggestions = async (symbol) => {
         if (symbol !== "") {
             try {
@@ -158,7 +156,7 @@ export default function Portfolio() {
                     <tr key={index} className='stock-item'>
                         <td>{position.stock.symbol}</td>
                         <td>{position.quantity}</td>
-                        <td>{position.average_price*position.quantity}</td>
+                        <td>{position.average_price * position.quantity}</td>
                         <td>{position.stock.price * position.quantity}</td>
                         <td>{Math.round(position.average_price * 100) / 100}</td>
                         <td>{position.stock.price}</td>

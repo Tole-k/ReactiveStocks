@@ -10,25 +10,24 @@ function FollowedStocks() {
     const [lastFetch, setLastFetch] = useState(0);
 
     useEffect(() => {
-        fetchStocks();
-    }, []);
-
-    const fetchStocks = async () => {
-        try {
-            if (Date.now() - lastFetch < 10000) {
-                console.log("too soon");
-                return;
+        const fetchStocks = async () => {
+            try {
+                if (Date.now() - lastFetch < 10000) {
+                    console.log("too soon");
+                    return;
+                }
+                console.log("fetching stocks");
+                const response = await fetch("http://127.0.0.1:8000/follow/");
+                const data = await response.json();
+                setStocks(data);
+                setLastFetch(Date.now());
+            } catch (error) {
+                console.log(error);
             }
-            console.log("fetching stocks");
-            const response = await fetch("http://127.0.0.1:8000/follow/");
-            const data = await response.json();
-            setStocks(data);
-            setLastFetch(Date.now());
-        } catch (error) {
-            
-            console.log(error);
-        }
-    }
+        };
+        fetchStocks();
+    }, [lastFetch]);
+
     const addStock = async () => {
         try {
             const response = await fetch("http://127.0.0.1:8000/follow/add/", {
@@ -43,7 +42,7 @@ function FollowedStocks() {
             setEnteredText("");
             setSuggestions([]);
         } catch (error) {
-            
+
             console.log(error);
         }
     };
@@ -55,20 +54,19 @@ function FollowedStocks() {
             });
             setStocks((prev) => prev.filter((stock) => stock.id !== id));
         } catch (error) {
-            
+
             console.log(error);
         }
     }
-    const Change = styled.p`
-        color: ${(props) => props.data === 0 ? "white" : props.data > 0 ? "green" : "red"};
-    `;
+    // eslint-disable-next-line react/prop-types
+    const Change = styled.p`color: ${(props) => props.data === 0 ? "white" : props.data > 0 ? "green" : "red"};`;
     const fetchSuggestions = async (symbol) => {
         if (symbol !== "") {
             try {
                 const response = await fetch(`http://127.0.0.1:8000/follow/suggestions/${symbol}/`);
                 setSuggestions(await response.json());
             } catch (error) {
-                
+
                 console.log(error);
             }
         }

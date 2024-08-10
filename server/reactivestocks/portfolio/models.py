@@ -10,3 +10,11 @@ class Position(models.Model):
 
     def __str__(self):
         return self.stock.name
+    
+    def serialize(self):
+        return {
+            "stock": self.stock.serialize(),
+            "quantity": self.quantity,
+            "average_price": self.average_price,
+            "timestamp": self.timestamp
+        }
