@@ -7,74 +7,65 @@ function FollowedStocks() {
     const [symbol, setSymbol] = useState("");
     const [suggestions, setSuggestions] = useState([]);
     const [enteredText, setEnteredText] = useState('');
-    const [lastFetch, setLastFetch] = useState(0);
+    const enable_suggestions = false;
 
     useEffect(() => {
         const fetchStocks = async () => {
-            try {
-                if (Date.now() - lastFetch < 10000) {
-                    console.log("too soon");
-                    return;
+            console.log("fetching stocks");
+            await fetch("http://127.0.0.1:8000/follow/").then((response) => {
+                console.log(response);
+                if (response.status === 200) {
+                    const data = response.data();
+                    console.log(data);
+                    setStocks(data);
                 }
-                console.log("fetching stocks");
-                const response = await fetch("http://127.0.0.1:8000/follow/");
-                const data = await response.json();
-                setStocks(data);
-                setLastFetch(Date.now());
-            } catch (error) {
+            }).catch((error) => {
                 console.log(error);
-            }
+            });
         };
         fetchStocks();
-    }, [lastFetch]);
+    }, []);
 
     const addStock = async () => {
-        try {
-            const response = await fetch("http://127.0.0.1:8000/follow/add/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ symbol }),
-            });
-            const data = await response.json();
+        await fetch("http://127.0.0.1:8000/follow/add/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ symbol }),
+        }).then((response) => {
+            console.log(response);
+            return response.json();
+        }).then((data) => {
             setStocks((prev) => [...prev, data]);
             setEnteredText("");
             setSuggestions([]);
-        } catch (error) {
-
+        }).catch((error) => {
             console.log(error);
-        }
+        });
     };
     const removeStock = async (id) => {
-        try {
-            // eslint-disable-next-line no-unused-vars
-            const response = await fetch(`http://127.0.0.1:8000/follow/remove/${id}/`, {
-                method: "DELETE",
-            });
-            setStocks((prev) => prev.filter((stock) => stock.id !== id));
-        } catch (error) {
-
-            console.log(error);
-        }
+        await fetch(`http://127.0.0.1:8000/follow/remove/${id}/`, {
+            method: "DELETE",
+        });
+        setStocks((prev) => prev.filter((stock) => stock.id !== id));
     }
     // eslint-disable-next-line react/prop-types
     const Change = styled.p`color: ${(props) => props.data === 0 ? "white" : props.data > 0 ? "green" : "red"};`;
     const fetchSuggestions = async (symbol) => {
         if (symbol !== "") {
-            try {
-                const response = await fetch(`http://127.0.0.1:8000/follow/suggestions/${symbol}/`);
-                setSuggestions(await response.json());
-            } catch (error) {
-
+            await fetch(`http://127.0.0.1:8000/follow/suggestions/${symbol}/`).then((response) => response.json()).then((data) => {
+                setSuggestions(data);
+            }).catch((error) => {
                 console.log(error);
-            }
+            });
         }
     }
     const searchBarChange = (event) => {
         setEnteredText(event.target.value);
         setSymbol(event.target.value);
-        fetchSuggestions(event.target.value);
+        if (enable_suggestions)
+            fetchSuggestions(event.target.value);
         if (!event.target.value) {
             setSuggestions([]);
         }
@@ -101,64 +92,72 @@ function FollowedStocks() {
             <h3>Followed Stocks</h3>
             <table className='stock-table'>
                 <thead>
-                    <td>Symbol</td>
-                    <td>Name</td>
-                    <td>Price</td>
-                    <td>Change</td>
-                    <td>%Change</td>
-                    <td>Volume</td>
-                    <td>Actions</td>
-                </thead>
-                {stocks.filter(stock => stock.followed).map((stock, index) => (
-                    <tr key={index} className='stock-item'>
-                        <td>{stock.symbol}</td>
-                        <td>{stock.name}</td>
-                        <td>{stock.price}</td>
-                        <td>
-                            <Change data={stock.change}>{stock.change}</Change>
-                        </td>
-                        <td>
-                            <Change data={stock.changesPercentage}>{stock.changesPercentage}</Change>
-                        </td>
-                        <td>{stock.volume}</td>
-                        <td>
-                            <button onClick={() => removeStock(stock.id)}>Unfollow</button>
-                        </td>
+                    <tr>
+                        <td>Symbol</td>
+                        <td>Name</td>
+                        <td>Price</td>
+                        <td>Change</td>
+                        <td>%Change</td>
+                        <td>Volume</td>
+                        <td>Actions</td>
                     </tr>
-                ))}
+                </thead>
+                <tbody>
+                    {stocks.filter(stock => stock.followed).map((stock, index) => (
+                        <tr key={index} className='stock-item'>
+                            <td>{stock.symbol}</td>
+                            <td>{stock.name}</td>
+                            <td>{stock.price}</td>
+                            <td>
+                                <Change data={stock.change}>{stock.change}</Change>
+                            </td>
+                            <td>
+                                <Change data={stock.changesPercentage}>{stock.changesPercentage}</Change>
+                            </td>
+                            <td>{stock.volume}</td>
+                            <td>
+                                <button onClick={() => removeStock(stock.id)}>Unfollow</button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
             </table>
             <h3>Owned Stocks</h3>
             <table className='stock-table'>
                 <thead>
-                    <td>Symbol</td>
-                    <td>Name</td>
-                    <td>Price</td>
-                    <td>Change</td>
-                    <td>%Change</td>
-                    <td>Volume</td>
-                    <td>Actions</td>
-                </thead>
-                {stocks.filter(stock => stock.owned).map((stock, index) => (
-                    <tr key={index} className='stock-item'>
-                        <td>{stock.symbol}</td>
-                        <td>{stock.name}</td>
-                        <td>{stock.price}</td>
-                        <td>
-                            <Change data={stock.change}>{stock.change}</Change>
-                        </td>
-                        <td>
-                            <Change data={stock.changesPercentage}>{stock.changesPercentage}</Change>
-                        </td>
-                        <td>{stock.volume}</td>
-                        <td>
-                            <button>
-                                <Nav.Link href="/portfolio">
-                                    Portfolio
-                                </Nav.Link>
-                            </button>
-                        </td>
+                    <tr>
+                        <td>Symbol</td>
+                        <td>Name</td>
+                        <td>Price</td>
+                        <td>Change</td>
+                        <td>%Change</td>
+                        <td>Volume</td>
+                        <td>Actions</td>
                     </tr>
-                ))}
+                </thead>
+                <tbody>
+                    {stocks.filter(stock => stock.owned).map((stock, index) => (
+                        <tr key={index} className='stock-item'>
+                            <td>{stock.symbol}</td>
+                            <td>{stock.name}</td>
+                            <td>{stock.price}</td>
+                            <td>
+                                <Change data={stock.change}>{stock.change}</Change>
+                            </td>
+                            <td>
+                                <Change data={stock.changesPercentage}>{stock.changesPercentage}</Change>
+                            </td>
+                            <td>{stock.volume}</td>
+                            <td>
+                                <button>
+                                    <Nav.Link href="/portfolio">
+                                        Portfolio
+                                    </Nav.Link>
+                                </button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
             </table>
         </>
     );

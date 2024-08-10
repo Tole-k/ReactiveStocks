@@ -48,6 +48,7 @@ def get_followed_stocks(request):
     update(stocks)
     serializedData = StockSerializer(
         Stock.objects.all(), many=True).data
+    print(serializedData)
     return Response(serializedData)
 
 

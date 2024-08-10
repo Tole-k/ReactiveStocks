@@ -1,5 +1,5 @@
-import time
-from turtle import pos, st
+from turtle import pos
+from django.http import JsonResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -20,6 +20,7 @@ def get_positions(request):
     stocks = [position.stock for position in positions]
     update(stocks)
     serializedData = PositionSerializer(positions, many=True).data
+    print(serializedData)
     return Response(serializedData)
 
 
@@ -39,7 +40,8 @@ def open_position(request):
             data['stock'] = stock
             position = Position(stock=data['stock'], quantity=float(data['quantity']), average_price=float(data['average_price']), timestamp=data['date'])
             position.save()
-            return Response(PositionSerializer(position).data, status=status.HTTP_201_CREATED)
+            print(position.serialize())
+            return JsonResponse(position.serialize(), status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     else:
         data['stock'] = stock
@@ -49,10 +51,10 @@ def open_position(request):
                                       float(data['average_price']) * float(data['quantity']))/(position.quantity + float(data['quantity']))
             position.quantity += float(data['quantity'])
             position.save()
-            return Response(PositionSerializer(position).data, status=status.HTTP_201_CREATED)
+            return JsonResponse(position.serialize(), status=status.HTTP_201_CREATED)
         position = Position(stock=data['stock'], quantity=float(data['quantity']), average_price=float(data['average_price']), timestamp=data['date'])
         position.save()
-        return Response(PositionSerializer(position).data, status=status.HTTP_201_CREATED)
+        return JsonResponse(position.serialize(), status=status.HTTP_201_CREATED)
 
 
 @api_view(['DELETE'])
