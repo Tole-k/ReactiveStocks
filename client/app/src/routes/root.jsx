@@ -1,4 +1,4 @@
-import { Outlet, Link } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
@@ -18,6 +18,13 @@ export default function Root() {
                             </Nav.Link>
                             <Nav.Link href="/portfolio">
                                 Portfolio
+                            </Nav.Link>
+                        </Nav>
+                    </Navbar.Collapse>
+                    <Navbar.Collapse className="justify-content-end">
+                        <Nav>
+                            <Nav.Link href="/auth">
+                                Login
                             </Nav.Link>
                         </Nav>
                     </Navbar.Collapse>

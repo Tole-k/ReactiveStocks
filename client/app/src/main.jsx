@@ -9,6 +9,7 @@ import ErrorPage from './error-page.jsx';
 import Root from './routes/root.jsx';
 import FollowedStocks from './routes/FollowedStocks.jsx';
 import Portfolio from './routes/Portfolio.jsx';
+import Auth from './routes/Auth.jsx';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
@@ -25,6 +26,10 @@ const router = createBrowserRouter([
       {
         path: "/portfolio",
         element: <Portfolio />,
+      },
+      {
+        path: "/auth",
+        element: <Auth />,
       }
     ]
   },
