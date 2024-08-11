@@ -7,21 +7,22 @@ function FollowedStocks() {
     const [symbol, setSymbol] = useState("");
     const [suggestions, setSuggestions] = useState([]);
     const [enteredText, setEnteredText] = useState('');
-    const enable_suggestions = false;
+    const enable_suggestions = true;
 
     useEffect(() => {
         const fetchStocks = async () => {
             console.log("fetching stocks");
-            await fetch("http://127.0.0.1:8000/follow/").then((response) => {
+            try {
+                const response = await fetch("http://127.0.0.1:8000/follow/");
                 console.log(response);
                 if (response.status === 200) {
-                    const data = response.data();
+                    const data = await response.json();
                     console.log(data);
                     setStocks(data);
                 }
-            }).catch((error) => {
+            } catch (error) {
                 console.log(error);
-            });
+            }
         };
         fetchStocks();
     }, []);
@@ -37,7 +38,18 @@ function FollowedStocks() {
             console.log(response);
             return response.json();
         }).then((data) => {
-            setStocks((prev) => [...prev, data]);
+            //setStocks((prev) => [...prev, data]);
+            if (stocks.some((stock) => stock.symbol === symbol)) {
+                setStocks((prev) => prev.map((stock) => {
+                    if (stock.symbol === data.symbol) {
+                        stock.followed = true;
+                    }
+                    return stock;
+                }));
+            }
+            else {
+                setStocks((prev) => [...prev, data]);
+            }
             setEnteredText("");
             setSuggestions([]);
         }).catch((error) => {
@@ -48,7 +60,13 @@ function FollowedStocks() {
         await fetch(`http://127.0.0.1:8000/follow/remove/${id}/`, {
             method: "DELETE",
         });
-        setStocks((prev) => prev.filter((stock) => stock.id !== id));
+        //setStocks((prev) => prev.filter((stock) => stock.id !== id));
+        setStocks((prev) => prev.map((stock) => {
+            if (stock.id === id) {
+                stock.followed = false;
+            }
+            return stock;
+        }));
     }
     // eslint-disable-next-line react/prop-types
     const Change = styled.p`color: ${(props) => props.data === 0 ? "white" : props.data > 0 ? "green" : "red"};`;
@@ -103,7 +121,7 @@ function FollowedStocks() {
                     </tr>
                 </thead>
                 <tbody>
-                    {stocks.filter(stock => stock.followed).map((stock, index) => (
+                    {Array.isArray(stocks) && stocks.filter(stock => stock.followed).map((stock, index) => (
                         <tr key={index} className='stock-item'>
                             <td>{stock.symbol}</td>
                             <td>{stock.name}</td>
@@ -136,7 +154,7 @@ function FollowedStocks() {
                     </tr>
                 </thead>
                 <tbody>
-                    {stocks.filter(stock => stock.owned).map((stock, index) => (
+                    {Array.isArray(stocks) && stocks.filter(stock => stock.owned).map((stock, index) => (
                         <tr key={index} className='stock-item'>
                             <td>{stock.symbol}</td>
                             <td>{stock.name}</td>

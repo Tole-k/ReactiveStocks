@@ -54,6 +54,8 @@ def open_position(request):
             return JsonResponse(position.serialize(), status=status.HTTP_201_CREATED)
         position = Position(stock=data['stock'], quantity=float(data['quantity']), average_price=float(data['average_price']), timestamp=data['date'])
         position.save()
+        stock.owned = True
+        stock.save()
         return JsonResponse(position.serialize(), status=status.HTTP_201_CREATED)
 
 
