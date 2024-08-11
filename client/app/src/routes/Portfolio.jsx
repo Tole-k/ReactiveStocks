@@ -8,21 +8,22 @@ export default function Portfolio() {
     const [date, setDate] = useState("");
     const [suggestions, setSuggestions] = useState([]);
     const [enteredText, setEnteredText] = useState('');
-    const enable_suggestions = false;
+    const enable_suggestions = true;
 
 
     useEffect(() => {
         const fetchPositions = async () => {
             console.log("fetching stocks");
-            await fetch("http://127.0.0.1:8000/portfolio/").then((response) => {
+            try {
+                const response = await fetch("http://127.0.0.1:8000/portfolio/");
                 console.log(response);
                 if (response.status === 200) {
-                    const data = response.data();
+                    const data = await response.json();
                     setPositions(data);
                 }
-            }).catch((error) => {
+            } catch (error) {
                 console.log(error);
-            });
+            }
         };
         fetchPositions();
     }, []);
@@ -145,7 +146,7 @@ export default function Portfolio() {
                     </tr>
                 </thead>
                 <tbody>
-                    {positions.map((position, index) => (
+                    {Array.isArray(positions) && positions.map((position, index) => (
                         <tr key={index} className='stock-item'>
                             <td>{position.stock.symbol}</td>
                             <td>{position.quantity}</td>
