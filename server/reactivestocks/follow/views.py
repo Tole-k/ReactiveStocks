@@ -48,7 +48,6 @@ def get_followed_stocks(request):
     update(stocks)
     serializedData = StockSerializer(
         Stock.objects.all(), many=True).data
-    print(serializedData)
     return Response(serializedData)
 
 
@@ -72,7 +71,6 @@ def add_stock(request):
     else:
         data = requests.get(
             f'https://financialmodelingprep.com/api/v3/quote/{symbol}?apikey={APIKEY}').json()
-        print(data)
         data[0]['followed'] = True
         serializer = StockSerializer(data=data[0])
         if serializer.is_valid():

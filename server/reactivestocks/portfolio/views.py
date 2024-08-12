@@ -19,7 +19,6 @@ def get_positions(request):
     stocks = [position.stock for position in positions]
     update(stocks)
     serializedData = PositionSerializer(positions, many=True).data
-    print(serializedData)
     return Response(serializedData)
 
 
@@ -27,7 +26,8 @@ def get_positions(request):
 def open_position(request):
     data = request.data['positionData']
     symbol = data['symbol']
-    stock = Stock.objects.get(symbol=symbol) if Stock.objects.filter(symbol=symbol).exists() else None
+    stock = Stock.objects.get(symbol=symbol) if Stock.objects.filter(
+        symbol=symbol).exists() else None
     if stock is None:
         stock_data = requests.get(
             f'https://financialmodelingprep.com/api/v3/quote/{symbol}?apikey={APIKEY}').json()[0]
@@ -37,9 +37,9 @@ def open_position(request):
             serializer.save()
             stock = Stock.objects.get(symbol=symbol)
             data['stock'] = stock
-            position = Position(stock=data['stock'], quantity=float(data['quantity']), average_price=float(data['average_price']), timestamp=data['date'])
+            position = Position(stock=data['stock'], quantity=float(
+                data['quantity']), average_price=float(data['average_price']), timestamp=data['date'])
             position.save()
-            print(position.serialize())
             return JsonResponse(position.serialize(), status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     else:
@@ -51,7 +51,8 @@ def open_position(request):
             position.quantity += float(data['quantity'])
             position.save()
             return JsonResponse(position.serialize(), status=status.HTTP_201_CREATED)
-        position = Position(stock=data['stock'], quantity=float(data['quantity']), average_price=float(data['average_price']), timestamp=data['date'])
+        position = Position(stock=data['stock'], quantity=float(
+            data['quantity']), average_price=float(data['average_price']), timestamp=data['date'])
         position.save()
         stock.owned = True
         stock.save()
