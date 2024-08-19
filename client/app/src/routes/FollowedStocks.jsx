@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import styled from "styled-components";
 import Nav from 'react-bootstrap/Nav';
 
-function FollowedStocks() {
+export default function FollowedStocks() {
     const [stocks, setStocks] = useState([]);
     const [symbol, setSymbol] = useState("");
     const [suggestions, setSuggestions] = useState([]);
@@ -180,4 +180,3 @@ function FollowedStocks() {
         </>
     );
 }
-export default FollowedStocks;

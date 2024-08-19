@@ -9,7 +9,7 @@ import ErrorPage from './error-page.jsx';
 import Root from './routes/root.jsx';
 import FollowedStocks from './routes/FollowedStocks.jsx';
 import Portfolio from './routes/Portfolio.jsx';
-import Auth from './routes/Auth.jsx';
+import UserAuth from './routes/UserAuth.jsx';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
@@ -20,7 +20,7 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       {
-        path: "/followed-stocks",
+        path: "/follow",
         element: <FollowedStocks />,
       },
       {
@@ -28,9 +28,9 @@ const router = createBrowserRouter([
         element: <Portfolio />,
       },
       {
-        path: "/auth",
-        element: <Auth />,
-      }
+        path: "user_auth",
+        element: <UserAuth />,
+      },
     ]
   },
 ]);

@@ -57,4 +57,3 @@ class Stock(models.Model):
             "owned": self.owned,
             "followed": self.followed
         }
-        

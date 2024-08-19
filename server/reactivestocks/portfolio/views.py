@@ -1,3 +1,4 @@
+from math import log
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -7,10 +8,11 @@ from .serializer import PositionSerializer
 from follow.serializer import StockSerializer
 import requests
 from follow.views import update
+from django.contrib.auth.decorators import login_required
 
 APIKEY = 'smwtbHsasmvEoGzGfDTq5Wo5xcqVHQvu'
 
-
+@login_required
 @api_view(['GET'])
 def get_positions(request):
     if not Position.objects.exists():
@@ -21,7 +23,7 @@ def get_positions(request):
     serializedData = PositionSerializer(positions, many=True).data
     return Response(serializedData)
 
-
+@login_required
 @api_view(['POST'])
 def open_position(request):
     data = request.data['positionData']
@@ -58,7 +60,7 @@ def open_position(request):
         stock.save()
         return JsonResponse(position.serialize(), status=status.HTTP_201_CREATED)
 
-
+@login_required
 @api_view(['DELETE'])
 def close_position(request, pk):
     try:

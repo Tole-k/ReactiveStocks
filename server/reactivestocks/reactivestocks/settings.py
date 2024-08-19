@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'follow',
     'portfolio',
-    'auth',
+    'user_auth',
     'rest_framework',
     'corsheaders',
 ]
@@ -61,7 +61,6 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [],
-        # 'DIRS': [BASE_DIR.joinpath('client', 'app')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -87,6 +86,7 @@ DATABASES = {
     }
 }
 
+AUTH_USER_MODEL = "user_auth.User"
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -130,19 +130,3 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True
-
-
-# Security settings
-CSRF_COOKIE_SAMESITE = 'Strict'
-SESSION_COOKIE_SAMESITE = 'Strict'
-CSRF_COOKIE_HTTPONLY = False
-SESSION_COOKIE_HTTPONLY = True
-
-
-# For production, set these lines to True
-# CSRF_COOKIE_HTTPONLY = True
-# SESSION_COOKIE_HTTPONLY = True
-
-# STATICFILES_DIRS = (
-#     BASE_DIR.joinpath('client', 'app', 'dist'),
-# )

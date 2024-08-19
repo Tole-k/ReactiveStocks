@@ -4,6 +4,7 @@ from rest_framework import status
 from .models import Stock
 from .serializer import StockSerializer
 import requests
+from django.contrib.auth.decorators import login_required
 
 APIKEY = 'smwtbHsasmvEoGzGfDTq5Wo5xcqVHQvu'
 
@@ -40,6 +41,7 @@ def update(stocks):
         stock.save()
 
 
+@login_required
 @api_view(['GET'])
 def get_followed_stocks(request):
     if not Stock.objects.exists():
@@ -51,6 +53,7 @@ def get_followed_stocks(request):
     return Response(serializedData)
 
 
+@login_required
 @api_view(['GET'])
 def get_suggestions(request, symbol):
     data = requests.get(
@@ -58,6 +61,7 @@ def get_suggestions(request, symbol):
     return Response(data)
 
 
+@login_required
 @api_view(['POST'])
 def add_stock(request):
     symbol = request.data['symbol']
@@ -79,6 +83,7 @@ def add_stock(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@login_required
 @api_view(['DELETE'])
 def remove_stock(request, pk):
     try:

@@ -89,3 +89,10 @@ label{
 h3{
   text-align: center;
 }
+.row {
+  display: flex;
+}
+
+.column {
+  flex: 50%;
+}
