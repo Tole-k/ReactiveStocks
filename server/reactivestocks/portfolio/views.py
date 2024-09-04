@@ -12,6 +12,7 @@ from django.contrib.auth.decorators import login_required
 
 APIKEY = 'smwtbHsasmvEoGzGfDTq5Wo5xcqVHQvu'
 
+
 @login_required
 @api_view(['GET'])
 def get_positions(request):
@@ -22,6 +23,7 @@ def get_positions(request):
     update(stocks)
     serializedData = PositionSerializer(positions, many=True).data
     return Response(serializedData)
+
 
 @login_required
 @api_view(['POST'])
@@ -59,6 +61,7 @@ def open_position(request):
         stock.owned = True
         stock.save()
         return JsonResponse(position.serialize(), status=status.HTTP_201_CREATED)
+
 
 @login_required
 @api_view(['DELETE'])

@@ -25,6 +25,7 @@ export default function UserAuth() {
         }).catch((error) => {
             console.log(error);
         });
+        return false;
     }
     const register = async () => {
         await fetch("http://127.0.0.1:8000/user_auth/register/", {
@@ -46,6 +47,7 @@ export default function UserAuth() {
         }).catch((error) => {
             console.log(error);
         });
+        return false;
     }
 
     useEffect(() => {
@@ -84,7 +86,7 @@ export default function UserAuth() {
                                 <label htmlFor="login_password">Password</label>
                                 <input type="password" className="form-control" id="login_password" name="login_password" onChange={(e) => setPassword(e.target.value)} value={password} />
                             </div>
-                            <button type="submit" onClick={login} className="btn btn-primary">Login</button>
+                            <button type="data" onClick={login} className="btn btn-primary">Login</button>
                         </form>
                     </div>
                 </div>
@@ -109,7 +111,7 @@ export default function UserAuth() {
                                 <label htmlFor="confirmation_password">Repeat Password</label>
                                 <input type="password" className="form-control" id="confirmation_password" name="confirmation_password" onChange={(e) => setConfirmationPassword(e.target.value)} value={confirmationPassword} />
                             </div>
-                            <button type="submit" onClick={register} className="btn btn-primary">Register</button>
+                            <button type="data" onClick={register} className="btn btn-primary">Register</button>
                         </form>
                     </div>
                 </div>

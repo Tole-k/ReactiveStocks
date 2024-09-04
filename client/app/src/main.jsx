@@ -9,7 +9,9 @@ import ErrorPage from './error-page.jsx';
 import Root from './routes/root.jsx';
 import FollowedStocks from './routes/FollowedStocks.jsx';
 import Portfolio from './routes/Portfolio.jsx';
-import UserAuth from './routes/UserAuth.jsx';
+import Login from './routes/login.jsx';
+import Logout from './routes/logout.jsx';
+import Home from './routes/home.jsx';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
@@ -29,7 +31,15 @@ const router = createBrowserRouter([
       },
       {
         path: "user_auth",
-        element: <UserAuth />,
+        element: <Home />,
+      },
+      {
+        path: "user_auth/login",
+        element: <Login />,
+      },
+      {
+        path: "user_auth/logout",
+        element: <Logout />,
       },
     ]
   },
@@ -37,6 +47,6 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <RouterProvider router={router}/>
+    <RouterProvider router={router} />
   </React.StrictMode>
 );
