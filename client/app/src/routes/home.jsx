@@ -1,6 +1,6 @@
 // Import the react JS packages
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from '../axiosConfig';
 
 // Define the Home function.
 export default function Home() {
@@ -8,31 +8,26 @@ export default function Home() {
     const accessToken = localStorage.getItem('access_token');
 
     useEffect(() => {
-        if (!accessToken) {
-            console.log('No access token found, redirecting to login.');
-            window.location.href = '/login';
-        } else {
-            (async () => {
-                try {
-                    console.log('Access token found:', accessToken);
-                    const { data } = await axios.get(
-                        'http://localhost:8000/user_auth/home/', {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${accessToken}`
-                        }
-                    }
-                    );
-                    setMessage(data.message);
-                } catch (e) {
-                    console.log('Error during authentication:', e);
-                    if (e.response && e.response.status === 401) {
-                        console.log('Unauthorized, redirecting to login.');
-                        window.location.href = '/user_auth/login';
+        (async () => {
+            try {
+                console.log('Access token found:', accessToken);
+                const { data } = await axios.get(
+                    'http://localhost:8000/user_auth/home/', {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`
                     }
                 }
-            })();
-        }
+                );
+                setMessage(data.message);
+            } catch (e) {
+                console.log('Error during authentication:', e);
+                if (e.response && e.response.status === 401) {
+                    console.log('Unauthorized, redirecting to login.');
+                    window.location.href = '/user_auth/login';
+                }
+            }
+        })();
     }, [accessToken]);
 
     return (

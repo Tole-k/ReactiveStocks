@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import styled from "styled-components";
 import Nav from 'react-bootstrap/Nav';
+import axios from '../axiosConfig';
 
 export default function FollowedStocks() {
     const [stocks, setStocks] = useState([]);
@@ -13,12 +14,10 @@ export default function FollowedStocks() {
         const fetchStocks = async () => {
             console.log("fetching stocks");
             try {
-                const response = await fetch("http://127.0.0.1:8000/follow/");
+                const response = await axios.get('http://localhost:8000/follow/');
                 console.log(response);
                 if (response.status === 200) {
-                    const data = await response.json();
-                    console.log(data);
-                    setStocks(data);
+                    setStocks(response.data);
                 }
             } catch (error) {
                 console.log(error);
@@ -28,17 +27,14 @@ export default function FollowedStocks() {
     }, []);
 
     const addStock = async () => {
-        await fetch("http://127.0.0.1:8000/follow/add/", {
-            method: "POST",
+        await axios.post("http://127.0.0.1:8000/follow/add/", { symbol }, {
             headers: {
                 "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ symbol }),
+            }
         }).then((response) => {
             console.log(response);
-            return response.json();
+            return response.data;
         }).then((data) => {
-            //setStocks((prev) => [...prev, data]);
             if (stocks.some((stock) => stock.symbol === symbol)) {
                 setStocks((prev) => prev.map((stock) => {
                     if (stock.symbol === data.symbol) {
@@ -56,11 +52,9 @@ export default function FollowedStocks() {
             console.log(error);
         });
     };
+
     const removeStock = async (id) => {
-        await fetch(`http://127.0.0.1:8000/follow/remove/${id}/`, {
-            method: "DELETE",
-        });
-        //setStocks((prev) => prev.filter((stock) => stock.id !== id));
+        await axios.delete(`http://127.0.0.1:8000/follow/remove/${id}/`);
         setStocks((prev) => prev.map((stock) => {
             if (stock.id === id) {
                 stock.followed = false;
@@ -68,17 +62,21 @@ export default function FollowedStocks() {
             return stock;
         }));
     }
+
     // eslint-disable-next-line react/prop-types
     const Change = styled.p`color: ${(props) => props.data === 0 ? "white" : props.data > 0 ? "green" : "red"};`;
+
     const fetchSuggestions = async (symbol) => {
         if (symbol !== "") {
-            await fetch(`http://127.0.0.1:8000/follow/suggestions/${symbol}/`).then((response) => response.json()).then((data) => {
-                setSuggestions(data);
-            }).catch((error) => {
+            try {
+                const response = await axios.get(`http://127.0.0.1:8000/follow/suggestions/${symbol}/`);
+                setSuggestions(response.data);
+            } catch (error) {
                 console.log(error);
-            });
+            }
         }
     }
+
     const searchBarChange = (event) => {
         setEnteredText(event.target.value);
         setSymbol(event.target.value);
@@ -88,11 +86,13 @@ export default function FollowedStocks() {
             setSuggestions([]);
         }
     }
+
     const suggestionsClick = (symbol) => {
         setSymbol(symbol);
         setEnteredText(symbol);
         setSuggestions([]);
     }
+
     return (
         <>
             <h1>Stock Browser</h1>

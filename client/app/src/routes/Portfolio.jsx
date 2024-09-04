@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import styled from "styled-components";
+import axios from '../axiosConfig';
+
 export default function Portfolio() {
     const [positions, setPositions] = useState([]);
     const [symbol, setSymbol] = useState("");
@@ -10,16 +12,14 @@ export default function Portfolio() {
     const [enteredText, setEnteredText] = useState('');
     const enable_suggestions = true;
 
-
     useEffect(() => {
         const fetchPositions = async () => {
             console.log("fetching stocks");
             try {
-                const response = await fetch("http://127.0.0.1:8000/portfolio/");
+                const response = await axios.get("http://127.0.0.1:8000/portfolio/");
                 console.log(response);
                 if (response.status === 200) {
-                    const data = await response.json();
-                    setPositions(data);
+                    setPositions(response.data);
                 }
             } catch (error) {
                 console.log(error);
@@ -36,13 +36,14 @@ export default function Portfolio() {
             average_price: price,
             date
         };
-        fetch("http://127.0.0.1:8000/portfolio/open/", {
-            method: "POST",
+        axios.post("http://127.0.0.1:8000/portfolio/open/", positionData, {
             headers: {
                 "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ positionData }),
-        }).then((response) => { console.log(response); return response.json(); }).then((data) => {
+            }
+        }).then((response) => {
+            console.log(response);
+            return response.data;
+        }).then((data) => {
             if (positions.some((position) => position.symbol === symbol)) {
                 setPositions((prev) => prev.map((position) => {
                     if (position.symbol === data.symbol) {
@@ -63,25 +64,27 @@ export default function Portfolio() {
         });
         e.preventDefault();
     };
+
     const closePosition = async (id) => {
-        await fetch(`http://127.0.0.1:8000/portfolio/close/${id}/`, {
-            method: "DELETE",
-        }).catch((error) => {
+        await axios.delete(`http://127.0.0.1:8000/portfolio/close/${id}/`).catch((error) => {
             console.log(error);
         });
         setPositions((prev) => prev.filter((stock) => stock.id !== id));
     }
-    // eslint-disable-next-line react/prop-types
+
     const Change = styled.p`color: ${(props) => props.data === 0 ? "white" : props.data > 0 ? "green" : "red"};`;
+
     const fetchSuggestions = async (symbol) => {
         if (symbol !== "") {
-            await fetch(`http://127.0.0.1:8000/follow/suggestions/${symbol}/`).then((response) => response.json()).then((data) => {
-                setSuggestions(data);
-            }).catch((error) => {
+            try {
+                const response = await axios.get(`http://127.0.0.1:8000/follow/suggestions/${symbol}/`);
+                setSuggestions(response.data);
+            } catch (error) {
                 console.log(error);
-            });
+            }
         }
     }
+
     const searchBarChange = (event) => {
         setEnteredText(event.target.value);
         setSymbol(event.target.value);
@@ -91,11 +94,13 @@ export default function Portfolio() {
             setSuggestions([]);
         }
     }
+
     const suggestionsClick = (symbol) => {
         setSymbol(symbol);
         setEnteredText(symbol);
         setSuggestions([]);
     }
+
     return (
         <>
             <h1>Portfolio</h1>

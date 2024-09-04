@@ -1,5 +1,5 @@
 // Import the react JS packages 
-import axios from "axios";
+import axios from '../axiosConfig';
 import { useState } from "react";
 // Define the Login function.
 export default function Login() {

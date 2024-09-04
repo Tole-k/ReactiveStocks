@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import axios from "axios";
+import axios from '../axiosConfig';
 
 export default function Logout() {
     const accessToken = localStorage.getItem('access_token');
