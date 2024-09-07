@@ -20,9 +20,6 @@ export default function Root() {
                     <Navbar.Toggle aria-controls="basic-navbar-nav" />
                     <Navbar.Collapse id="basic-navbar-nav">
                         <Nav className="me-auto">
-                            {isAuth ? <Nav.Link href="/user_auth">
-                                Home
-                            </Nav.Link> : null}
                             {isAuth ? <Nav.Link href="/follow">
                                 Followed Stocks
                             </Nav.Link> : null}

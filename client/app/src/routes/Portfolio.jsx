@@ -10,6 +10,9 @@ export default function Portfolio() {
     const [date, setDate] = useState("");
     const [suggestions, setSuggestions] = useState([]);
     const [enteredText, setEnteredText] = useState('');
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [user, setUser] = useState(null);
+    const accessToken = localStorage.getItem('access_token');
     const enable_suggestions = true;
 
     useEffect(() => {
@@ -25,8 +28,27 @@ export default function Portfolio() {
                 console.log(error);
             }
         };
+        const checkAuth = async () => {
+            await axios.get("http://127.0.0.1:8000/user_auth/whoami/", {
+                method: "GET",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            }).then((response) => {
+                console.log(response);
+                if (response.status === 200) {
+                    console.log(response.data)
+                    setIsAuthenticated(true);
+                    setUser(response.data.username);
+                }
+            }).catch((error) => {
+                console.log(error);
+            });
+        };
         fetchPositions();
-    }, []);
+        checkAuth();
+    }, [accessToken]);
 
     const openPosition = async (e) => {
         console.log(e)
@@ -36,9 +58,10 @@ export default function Portfolio() {
             average_price: price,
             date
         };
-        axios.post("http://127.0.0.1:8000/portfolio/open/", positionData, {
+        axios.post("http://127.0.0.1:8000/portfolio/open/", { positionData }, {
             headers: {
-                "Content-Type": "application/json",
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${accessToken}`
             }
         }).then((response) => {
             console.log(response);
@@ -72,6 +95,7 @@ export default function Portfolio() {
         setPositions((prev) => prev.filter((stock) => stock.id !== id));
     }
 
+    // eslint-disable-next-line react/prop-types
     const Change = styled.p`color: ${(props) => props.data === 0 ? "white" : props.data > 0 ? "green" : "red"};`;
 
     const fetchSuggestions = async (symbol) => {
@@ -103,7 +127,7 @@ export default function Portfolio() {
 
     return (
         <>
-            <h1>Portfolio</h1>
+            <h1>{user}'s Portfolio</h1>
             <div className='portfolio-container'>
                 <form className='portfolio-form'>
                     <div>

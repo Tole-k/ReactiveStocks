@@ -1,7 +1,9 @@
 from django.db import models
+from user_auth.models import User
 
 
 class Stock(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='stocks')
     symbol = models.CharField(null=False, max_length=10)
     name = models.CharField(null=False, max_length=100)
     price = models.FloatField()

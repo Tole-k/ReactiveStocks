@@ -30,10 +30,6 @@ const router = createBrowserRouter([
         element: <Portfolio />,
       },
       {
-        path: "user_auth",
-        element: <Home />,
-      },
-      {
         path: "user_auth/login",
         element: <Login />,
       },

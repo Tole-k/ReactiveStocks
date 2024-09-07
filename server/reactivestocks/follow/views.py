@@ -13,7 +13,7 @@ APIKEY = 'smwtbHsasmvEoGzGfDTq5Wo5xcqVHQvu'
 
 def update(stocks):
     if len(stocks) == 0:
-        returni
+        return
     symbols = ','.join([stock.symbol for stock in stocks])
     data = requests.get(
         f'https://financialmodelingprep.com/api/v3/quote/{symbols}?apikey={APIKEY}').json()
@@ -49,10 +49,10 @@ class FollowView(APIView):
     def get(self, request):
         if not Stock.objects.exists():
             return Response(status=status.HTTP_204_NO_CONTENT)
-        stocks = Stock.objects.all()
+        stocks = Stock.objects.filter(user=request.user)
         update(stocks)
         serializedData = StockSerializer(
-            Stock.objects.all(), many=True).data
+            Stock.objects.filter(user=request.user), many=True).data
         return Response(serializedData)
 
 
@@ -81,6 +81,7 @@ class AddStockView(APIView):
             data = requests.get(
                 f'https://financialmodelingprep.com/api/v3/quote/{symbol}?apikey={APIKEY}').json()
             data[0]['followed'] = True
+            data[0]['user'] = request.user.id
             serializer = StockSerializer(data=data[0])
             if serializer.is_valid():
                 serializer.save()

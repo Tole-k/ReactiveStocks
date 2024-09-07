@@ -10,16 +10,15 @@ export default function Home() {
     useEffect(() => {
         (async () => {
             try {
-                console.log('Access token found:', accessToken);
                 const { data } = await axios.get(
-                    'http://localhost:8000/user_auth/home/', {
+                    'http://localhost:8000/user_auth/whoami/', {
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${accessToken}`
                     }
                 }
                 );
-                setMessage(data.message);
+                setMessage(data.username);
             } catch (e) {
                 console.log('Error during authentication:', e);
                 if (e.response && e.response.status === 401) {

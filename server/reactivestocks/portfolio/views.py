@@ -22,7 +22,7 @@ class PortfolioView(APIView):
     def get(self, request):
         if not Position.objects.exists():
             return Response(status=status.HTTP_204_NO_CONTENT)
-        positions = Position.objects.all()
+        positions = Position.objects.filter(user=request.user)
         stocks = [position.stock for position in positions]
         update(stocks)
         serializedData = PositionSerializer(positions, many=True).data
@@ -41,13 +41,14 @@ class OpenPositionView(APIView):
             stock_data = requests.get(
                 f'https://financialmodelingprep.com/api/v3/quote/{symbol}?apikey={APIKEY}').json()[0]
             stock_data['owned'] = True
+            stock_data['user'] = request.user.id
             serializer = StockSerializer(data=stock_data)
             if serializer.is_valid():
                 serializer.save()
                 stock = Stock.objects.get(symbol=symbol)
                 data['stock'] = stock
                 position = Position(stock=data['stock'], quantity=float(
-                    data['quantity']), average_price=float(data['average_price']), timestamp=data['date'])
+                    data['quantity']), average_price=float(data['average_price']), timestamp=data['date'], user=request.user)
                 position.save()
                 return JsonResponse(position.serialize(), status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -61,7 +62,7 @@ class OpenPositionView(APIView):
                 position.save()
                 return JsonResponse(position.serialize(), status=status.HTTP_201_CREATED)
             position = Position(stock=data['stock'], quantity=float(
-                data['quantity']), average_price=float(data['average_price']), timestamp=data['date'])
+                data['quantity']), average_price=float(data['average_price']), timestamp=data['date'], user=request.user)
             position.save()
             stock.owned = True
             stock.save()

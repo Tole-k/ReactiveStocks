@@ -8,13 +8,21 @@ export default function FollowedStocks() {
     const [symbol, setSymbol] = useState("");
     const [suggestions, setSuggestions] = useState([]);
     const [enteredText, setEnteredText] = useState('');
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [user, setUser] = useState(null);
+    const accessToken = localStorage.getItem('access_token');
     const enable_suggestions = true;
 
     useEffect(() => {
         const fetchStocks = async () => {
             console.log("fetching stocks");
             try {
-                const response = await axios.get('http://localhost:8000/follow/');
+                const response = await axios.get('http://localhost:8000/follow/', {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
                 console.log(response);
                 if (response.status === 200) {
                     setStocks(response.data);
@@ -23,13 +31,33 @@ export default function FollowedStocks() {
                 console.log(error);
             }
         };
+        const checkAuth = async () => {
+            await axios.get("http://127.0.0.1:8000/user_auth/whoami/", {
+                method: "GET",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            }).then((response) => {
+                console.log(response);
+                if (response.status === 200) {
+                    console.log(response.data)
+                    setIsAuthenticated(true);
+                    setUser(response.data.username);
+                }
+            }).catch((error) => {
+                console.log(error);
+            });
+        };
         fetchStocks();
-    }, []);
+        checkAuth();
+    }, [accessToken]);
 
     const addStock = async () => {
         await axios.post("http://127.0.0.1:8000/follow/add/", { symbol }, {
             headers: {
-                "Content-Type": "application/json",
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${accessToken}`
             }
         }).then((response) => {
             console.log(response);
@@ -54,7 +82,12 @@ export default function FollowedStocks() {
     };
 
     const removeStock = async (id) => {
-        await axios.delete(`http://127.0.0.1:8000/follow/remove/${id}/`);
+        await axios.delete(`http://127.0.0.1:8000/follow/remove/${id}/`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${accessToken}`
+            }
+        });
         setStocks((prev) => prev.map((stock) => {
             if (stock.id === id) {
                 stock.followed = false;
@@ -69,7 +102,13 @@ export default function FollowedStocks() {
     const fetchSuggestions = async (symbol) => {
         if (symbol !== "") {
             try {
-                const response = await axios.get(`http://127.0.0.1:8000/follow/suggestions/${symbol}/`);
+                const response = await axios.get(`http://127.0.0.1:8000/follow/suggestions/${symbol}/`, {
+                    method: "GET",
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
                 setSuggestions(response.data);
             } catch (error) {
                 console.log(error);
@@ -107,7 +146,7 @@ export default function FollowedStocks() {
                     )) : null}
                 </div>
             </div>
-            <h3>Followed Stocks</h3>
+            <h3>{user}'s Followed Stocks</h3>
             <table className='stock-table'>
                 <thead>
                     <tr>
@@ -140,7 +179,7 @@ export default function FollowedStocks() {
                     ))}
                 </tbody>
             </table>
-            <h3>Owned Stocks</h3>
+            <h3>{user}'s Owned Stocks</h3>
             <table className='stock-table'>
                 <thead>
                     <tr>
