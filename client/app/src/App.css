@@ -1,4 +1,4 @@
-.search-container{
+.search-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -6,93 +6,172 @@
   margin-top: 10px;
   height: 200px;
 }
-#portfolio.dropdown{
+#portfolio.dropdown {
   display: flex;
   flex-direction: column;
   height: 200px;
   overflow-y: auto;
   max-width: 250px;
 }
-#followed.dropdown{
-    display: flex;
-    flex-direction: column;
-    height: 200px;
-    overflow-y: auto;
+#followed.dropdown {
+  display: flex;
+  flex-direction: column;
+  height: 200px;
+  overflow-y: auto;
 }
-.dropdown:empty{
+.dropdown:empty {
   border: none;
 }
-.dropdown-row{
+.dropdown-row {
   cursor: pointer;
   text-align: start;
   padding-left: 3px;
   padding-right: 3px;
-  margin: 3px,0;
+  margin: 3px, 0;
 }
-.dropdown-row:hover{
+.dropdown-row:hover {
   background-color: #646cff;
 }
-.search-inner{
+.search-inner {
   display: flex;
 }
-table.stock-table{
+table.stock-table {
   width: 100%;
   border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 18px;
+  text-align: left;
 }
-table.stock-table th{
-  border: 1px solid;
-  padding: 8px;
+
+table.stock-table th,
+table.stock-table td {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  text-align: center;
+  width: 150px;
+}
+
+table.stock-table th {
+  background-color: #f4f4f4;
+  color: #333;
+  font-weight: bold;
+}
+
+table.stock-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+button {
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  max-height: 45px;
+}
+button.buy {
+  background-color: #4caf50;
+  margin-left: 10;
+  margin-top: 20px;
+}
+button.sell {
+  background-color: #f44336;
+}
+button.portfolio {
+  background-color: #646cff;
+}
+button.follow {
+  margin-left: 10;
+  background-color: #4caf50;
+}
+
+.portfolio-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 30px;
+  height: 200px;
+}
+
+label {
+  margin: 5px;
+}
+
+h1,
+h3 {
   text-align: center;
 }
-table.stock-table td{
-  border: 1px solid;
-  padding: 8px;
-  text-align: center;
-}
-h1{
-  text-align: center;
-}
-.portfolio-form{
+.portfolio-form {
   display: flex;
   flex-direction: row;
   justify-content: center;
 }
-button.buy{
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  cursor: pointer;
-  max-height: 45px;
-  padding: 10px 24px;
-  margin-left: 10;
-  margin-top: 20px;
-}
-button.sell{
-  background-color: #f44336;
-  color: white;
-  border: none;
-  cursor: pointer;
-  max-height: 45px;
-  padding: 10px 24px;
-}
-.portfolio-container{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin-top: 30px;
-    height: 200px;
-}
-label{
-  margin: 5px;
-}
-h3{
-  text-align: center;
-}
+
 .row {
   display: flex;
 }
 
 .column {
   flex: 50%;
+}
+
+.Auth-form-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #121212;
+}
+
+.Auth-form {
+  background: #1e1e1e;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  width: 100%;
+  max-width: 400px;
+  margin: 20px;
+}
+
+.Auth-form-title {
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  color: #ffffff;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background-color: #333;
+  color: #ffffff;
+}
+
+.form-control::placeholder {
+  color: #888;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+  color: white;
+  padding: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+  border-color: #004085;
+}
+.whole-page {
+  padding: 100px;
 }

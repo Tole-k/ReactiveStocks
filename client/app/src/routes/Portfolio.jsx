@@ -96,7 +96,12 @@ export default function Portfolio() {
     }
 
     // eslint-disable-next-line react/prop-types
-    const Change = styled.p`color: ${(props) => props.data === 0 ? "white" : props.data > 0 ? "green" : "red"};`;
+    const Change = styled.p`color: ${(props) => props.data === 0 ? "white" : props.data > 0 ? "green" : "red"};
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center; /* Center vertically */
+        height: 100%; /* Ensure it takes the full height of the cell */`;
 
     const fetchSuggestions = async (symbol) => {
         if (symbol !== "") {
@@ -126,7 +131,7 @@ export default function Portfolio() {
     }
 
     return (
-        <>
+        <div className='whole-page'>
             <h1>{user}'s Portfolio</h1>
             <div className='portfolio-container'>
                 <form className='portfolio-form'>
@@ -200,6 +205,6 @@ export default function Portfolio() {
                     ))}
                 </tbody>
             </table>
-        </>
+        </div>
     )
 }

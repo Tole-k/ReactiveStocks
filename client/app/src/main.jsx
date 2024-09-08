@@ -11,7 +11,6 @@ import FollowedStocks from './routes/FollowedStocks.jsx';
 import Portfolio from './routes/Portfolio.jsx';
 import Login from './routes/login.jsx';
 import Logout from './routes/logout.jsx';
-import Home from './routes/home.jsx';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
@@ -21,6 +20,10 @@ const router = createBrowserRouter([
     element: <Root />,
     errorElement: <ErrorPage />,
     children: [
+      {
+        path: "/",
+        element: <FollowedStocks />
+      },
       {
         path: "/follow",
         element: <FollowedStocks />,

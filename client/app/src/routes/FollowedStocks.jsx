@@ -47,10 +47,13 @@ export default function FollowedStocks() {
                 }
             }).catch((error) => {
                 console.log(error);
+                console.log("Not authenticated, redirecting to login");
+                setIsAuthenticated(false);
+                window.location.href = '/user_auth/login';
             });
         };
-        fetchStocks();
         checkAuth();
+        fetchStocks();
     }, [accessToken]);
 
     const addStock = async () => {
@@ -97,7 +100,12 @@ export default function FollowedStocks() {
     }
 
     // eslint-disable-next-line react/prop-types
-    const Change = styled.p`color: ${(props) => props.data === 0 ? "white" : props.data > 0 ? "green" : "red"};`;
+    const Change = styled.p`color: ${(props) => props.data === 0 ? "white" : props.data > 0 ? "green" : "red"};
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center; /* Center vertically */
+        height: 100%; /* Ensure it takes the full height of the cell */`;
 
     const fetchSuggestions = async (symbol) => {
         if (symbol !== "") {
@@ -133,12 +141,12 @@ export default function FollowedStocks() {
     }
 
     return (
-        <>
+        <div className='whole-page'>
             <h1>Stock Browser</h1>
             <div className='search-container'>
                 <div className='search-inner'>
                     <input type="text" placeholder="Stock Symbol..." value={enteredText} onChange={searchBarChange} />
-                    <button onClick={addStock}>Follow</button>
+                    <button className='follow' onClick={addStock}>Follow</button>
                 </div>
                 <div className='dropdown' id='followed'>
                     {suggestions.length ? suggestions.map((suggestion, index) => (
@@ -146,76 +154,84 @@ export default function FollowedStocks() {
                     )) : null}
                 </div>
             </div>
-            <h3>{user}'s Followed Stocks</h3>
-            <table className='stock-table'>
-                <thead>
-                    <tr>
-                        <td>Symbol</td>
-                        <td>Name</td>
-                        <td>Price</td>
-                        <td>Change</td>
-                        <td>%Change</td>
-                        <td>Volume</td>
-                        <td>Actions</td>
-                    </tr>
-                </thead>
-                <tbody>
-                    {Array.isArray(stocks) && stocks.filter(stock => stock.followed).map((stock, index) => (
-                        <tr key={index} className='stock-item'>
-                            <td>{stock.symbol}</td>
-                            <td>{stock.name}</td>
-                            <td>{stock.price}</td>
-                            <td>
-                                <Change data={stock.change}>{stock.change}</Change>
-                            </td>
-                            <td>
-                                <Change data={stock.changesPercentage}>{stock.changesPercentage}</Change>
-                            </td>
-                            <td>{stock.volume}</td>
-                            <td>
-                                <button onClick={() => removeStock(stock.id)}>Unfollow</button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-            <h3>{user}'s Owned Stocks</h3>
-            <table className='stock-table'>
-                <thead>
-                    <tr>
-                        <td>Symbol</td>
-                        <td>Name</td>
-                        <td>Price</td>
-                        <td>Change</td>
-                        <td>%Change</td>
-                        <td>Volume</td>
-                        <td>Actions</td>
-                    </tr>
-                </thead>
-                <tbody>
-                    {Array.isArray(stocks) && stocks.filter(stock => stock.owned).map((stock, index) => (
-                        <tr key={index} className='stock-item'>
-                            <td>{stock.symbol}</td>
-                            <td>{stock.name}</td>
-                            <td>{stock.price}</td>
-                            <td>
-                                <Change data={stock.change}>{stock.change}</Change>
-                            </td>
-                            <td>
-                                <Change data={stock.changesPercentage}>{stock.changesPercentage}</Change>
-                            </td>
-                            <td>{stock.volume}</td>
-                            <td>
-                                <button>
-                                    <Nav.Link href="/portfolio">
-                                        Portfolio
-                                    </Nav.Link>
-                                </button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </>
+            {stocks.filter(stock => stock.followed).length > 0 &&
+                <div>
+                    <h3>{user}'s Followed Stocks</h3>
+                    <table className='stock-table'>
+                        <thead>
+                            <tr>
+                                <td>Symbol</td>
+                                <td>Name</td>
+                                <td>Price</td>
+                                <td>Change</td>
+                                <td>%Change</td>
+                                <td>Volume</td>
+                                <td>Actions</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {Array.isArray(stocks) && stocks.filter(stock => stock.followed).map((stock, index) => (
+                                <tr key={index} className='stock-item'>
+                                    <td>{stock.symbol}</td>
+                                    <td>{stock.name}</td>
+                                    <td>{stock.price}</td>
+                                    <td>
+                                        <Change data={stock.change}>{stock.change}</Change>
+                                    </td>
+                                    <td>
+                                        <Change data={stock.changesPercentage}>{stock.changesPercentage}</Change>
+                                    </td>
+                                    <td>{stock.volume}</td>
+                                    <td>
+                                        <button className='sell' onClick={() => removeStock(stock.id)}>Unfollow</button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            }
+            {stocks.filter(stock => stock.owned).length > 0 &&
+                <div>
+                    <h3>{user}'s Owned Stocks</h3>
+                    <table className='stock-table'>
+                        <thead>
+                            <tr>
+                                <td>Symbol</td>
+                                <td>Name</td>
+                                <td>Price</td>
+                                <td>Change</td>
+                                <td>%Change</td>
+                                <td>Volume</td>
+                                <td>Actions</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {Array.isArray(stocks) && stocks.filter(stock => stock.owned).map((stock, index) => (
+                                <tr key={index} className='stock-item'>
+                                    <td>{stock.symbol}</td>
+                                    <td>{stock.name}</td>
+                                    <td>{stock.price}</td>
+                                    <td>
+                                        <Change data={stock.change}>{stock.change}</Change>
+                                    </td>
+                                    <td>
+                                        <Change data={stock.changesPercentage}>{stock.changesPercentage}</Change>
+                                    </td>
+                                    <td>{stock.volume}</td>
+                                    <td>
+                                        <button className='portfolio'>
+                                            <Nav.Link href="/portfolio">
+                                                Portfolio
+                                            </Nav.Link>
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
     );
 }

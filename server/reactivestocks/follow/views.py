@@ -70,10 +70,10 @@ class AddStockView(APIView):
 
     def post(self, request):
         symbol = request.data['symbol']
-        if Stock.objects.filter(symbol=symbol).exists():
-            if Stock.objects.get(symbol=symbol).followed:
+        if Stock.objects.filter(symbol=symbol, user=request.user).exists():
+            if Stock.objects.get(symbol=symbol, user=request.user).followed:
                 return Response(status=status.HTTP_409_CONFLICT)
-            stock = Stock.objects.get(symbol=symbol)
+            stock = Stock.objects.get(symbol=symbol, user=request.user)
             stock.followed = True
             stock.save()
             return Response(StockSerializer(stock).data, status=status.HTTP_201_CREATED)

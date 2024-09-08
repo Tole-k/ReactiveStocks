@@ -35,8 +35,8 @@ class OpenPositionView(APIView):
     def post(self, request):
         data = request.data['positionData']
         symbol = data['symbol']
-        stock = Stock.objects.get(symbol=symbol) if Stock.objects.filter(
-            symbol=symbol).exists() else None
+        stock = Stock.objects.get(symbol=symbol, user=request.user) if Stock.objects.filter(
+            symbol=symbol, user=request.user).exists() else None
         if stock is None:
             stock_data = requests.get(
                 f'https://financialmodelingprep.com/api/v3/quote/{symbol}?apikey={APIKEY}').json()[0]
@@ -45,7 +45,7 @@ class OpenPositionView(APIView):
             serializer = StockSerializer(data=stock_data)
             if serializer.is_valid():
                 serializer.save()
-                stock = Stock.objects.get(symbol=symbol)
+                stock = Stock.objects.get(symbol=symbol, user=request.user)
                 data['stock'] = stock
                 position = Position(stock=data['stock'], quantity=float(
                     data['quantity']), average_price=float(data['average_price']), timestamp=data['date'], user=request.user)
