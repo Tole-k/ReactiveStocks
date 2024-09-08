@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import styled from "styled-components";
-import Nav from 'react-bootstrap/Nav';
 import axios from '../axiosConfig';
 
 export default function FollowedStocks() {
@@ -155,18 +154,17 @@ export default function FollowedStocks() {
                 </div>
             </div>
             {stocks.filter(stock => stock.followed).length > 0 &&
-                <div>
-                    <h3>{user}'s Followed Stocks</h3>
+                <div className='tableWrap'>
                     <table className='stock-table'>
                         <thead>
                             <tr>
-                                <td>Symbol</td>
-                                <td>Name</td>
-                                <td>Price</td>
-                                <td>Change</td>
-                                <td>%Change</td>
-                                <td>Volume</td>
-                                <td>Actions</td>
+                                <th>Symbol</th>
+                                <th>Name</th>
+                                <th>Price</th>
+                                <th>Change</th>
+                                <th>%Change</th>
+                                <th>Volume</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -184,47 +182,6 @@ export default function FollowedStocks() {
                                     <td>{stock.volume}</td>
                                     <td>
                                         <button className='sell' onClick={() => removeStock(stock.id)}>Unfollow</button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            }
-            {stocks.filter(stock => stock.owned).length > 0 &&
-                <div>
-                    <h3>{user}'s Owned Stocks</h3>
-                    <table className='stock-table'>
-                        <thead>
-                            <tr>
-                                <td>Symbol</td>
-                                <td>Name</td>
-                                <td>Price</td>
-                                <td>Change</td>
-                                <td>%Change</td>
-                                <td>Volume</td>
-                                <td>Actions</td>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {Array.isArray(stocks) && stocks.filter(stock => stock.owned).map((stock, index) => (
-                                <tr key={index} className='stock-item'>
-                                    <td>{stock.symbol}</td>
-                                    <td>{stock.name}</td>
-                                    <td>{stock.price}</td>
-                                    <td>
-                                        <Change data={stock.change}>{stock.change}</Change>
-                                    </td>
-                                    <td>
-                                        <Change data={stock.changesPercentage}>{stock.changesPercentage}</Change>
-                                    </td>
-                                    <td>{stock.volume}</td>
-                                    <td>
-                                        <button className='portfolio'>
-                                            <Nav.Link href="/portfolio">
-                                                Portfolio
-                                            </Nav.Link>
-                                        </button>
                                     </td>
                                 </tr>
                             ))}

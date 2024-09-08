@@ -10,7 +10,6 @@ axios.interceptors.response.use(
             try {
                 const refreshToken = localStorage.getItem('refresh_token');
                 if (!refreshToken) {
-                    // Handle case where there is no refresh token
                     refresh = false;
                     return Promise.reject(error);
                 }
@@ -29,12 +28,10 @@ axios.interceptors.response.use(
                     localStorage.setItem('access_token', response.data.access);
                     localStorage.setItem('refresh_token', response.data.refresh);
 
-                    // Retry the original request with the new token
                     error.config.headers['Authorization'] = `Bearer ${response.data['access']}`;
                     return axios(error.config);
                 }
             } catch (refreshError) {
-                // Handle error during token refresh
                 console.error('Token refresh error:', refreshError);
                 return Promise.reject(refreshError);
             } finally {

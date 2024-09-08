@@ -12,7 +12,7 @@ export default function Root() {
     }, [isAuth]);
     return (
         <>
-            <Navbar expand="lg" className="bg-body-tertiary">
+            <Navbar expand="lg" className="bg-body-tertiary" sticky="top">
                 <Container>
                     <Navbar.Brand>
                         Stock App
@@ -25,6 +25,9 @@ export default function Root() {
                             </Nav.Link> : null}
                             {isAuth ? <Nav.Link href="/portfolio">
                                 Portfolio
+                            </Nav.Link> : null}
+                            {isAuth ? <Nav.Link href="/pieChart">
+                                PieChart
                             </Nav.Link> : null}
                         </Nav>
                     </Navbar.Collapse>

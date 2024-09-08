@@ -9,6 +9,7 @@ import ErrorPage from './error-page.jsx';
 import Root from './routes/root.jsx';
 import FollowedStocks from './routes/FollowedStocks.jsx';
 import Portfolio from './routes/Portfolio.jsx';
+import PieCharts from './routes/pieChart.jsx';
 import Login from './routes/login.jsx';
 import Logout from './routes/logout.jsx';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -31,6 +32,10 @@ const router = createBrowserRouter([
       {
         path: "/portfolio",
         element: <Portfolio />,
+      },
+      {
+        path: "/pieChart",
+        element: <PieCharts />,
       },
       {
         path: "user_auth/login",

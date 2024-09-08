@@ -165,18 +165,19 @@ export default function Portfolio() {
                     <button className='buy' onClick={openPosition}>Open</button>
                 </form>
             </div>
+            <div className='tableWrap'>
             <table className='stock-table'>
                 <thead>
                     <tr>
-                        <td>Symbol</td>
-                        <td>Volume</td>
-                        <td>Purchase Value</td>
-                        <td>Market Value</td>
-                        <td>Open Price</td>
-                        <td>Market Price</td>
-                        <td>Net Profit/Loss</td>
-                        <td>Net P/L %</td>
-                        <td>Close</td>
+                        <th>Symbol</th>
+                        <th>Volume</th>
+                        <th>Purchase Value</th>
+                        <th>Market Value</th>
+                        <th>Open Price</th>
+                        <th>Market Price</th>
+                        <th>Net Profit/Loss</th>
+                        <th>Net P/L %</th>
+                        <th>Close</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -205,6 +206,7 @@ export default function Portfolio() {
                     ))}
                 </tbody>
             </table>
+            </div>
         </div>
     )
 }
