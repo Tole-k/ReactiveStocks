@@ -19,7 +19,12 @@ export default function Portfolio() {
         const fetchPositions = async () => {
             console.log("fetching stocks");
             try {
-                const response = await axios.get("http://127.0.0.1:8000/portfolio/");
+                const response = await axios.get("http://127.0.0.1:8000/portfolio/", {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
                 console.log(response);
                 if (response.status === 200) {
                     setPositions(response.data);
@@ -46,8 +51,8 @@ export default function Portfolio() {
                 console.log(error);
             });
         };
-        fetchPositions();
         checkAuth();
+        fetchPositions();
     }, [accessToken]);
 
     const openPosition = async (e) => {
@@ -67,9 +72,9 @@ export default function Portfolio() {
             console.log(response);
             return response.data;
         }).then((data) => {
-            if (positions.some((position) => position.symbol === symbol)) {
+            if (positions.some((position) => position.stock.symbol === symbol)) {
                 setPositions((prev) => prev.map((position) => {
-                    if (position.symbol === data.symbol) {
+                    if (position.stock.symbol === data.symbol) {
                         return {
                             data
                         };
@@ -89,7 +94,12 @@ export default function Portfolio() {
     };
 
     const closePosition = async (id) => {
-        await axios.delete(`http://127.0.0.1:8000/portfolio/close/${id}/`).catch((error) => {
+        await axios.delete(`http://127.0.0.1:8000/portfolio/close/${id}/`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${accessToken}`
+            }
+        }).catch((error) => {
             console.log(error);
         });
         setPositions((prev) => prev.filter((stock) => stock.id !== id));
@@ -106,7 +116,12 @@ export default function Portfolio() {
     const fetchSuggestions = async (symbol) => {
         if (symbol !== "") {
             try {
-                const response = await axios.get(`http://127.0.0.1:8000/follow/suggestions/${symbol}/`);
+                const response = await axios.get(`http://127.0.0.1:8000/follow/suggestions/${symbol}/`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
                 setSuggestions(response.data);
             } catch (error) {
                 console.log(error);
@@ -166,46 +181,46 @@ export default function Portfolio() {
                 </form>
             </div>
             <div className='tableWrap'>
-            <table className='stock-table'>
-                <thead>
-                    <tr>
-                        <th>Symbol</th>
-                        <th>Volume</th>
-                        <th>Purchase Value</th>
-                        <th>Market Value</th>
-                        <th>Open Price</th>
-                        <th>Market Price</th>
-                        <th>Net Profit/Loss</th>
-                        <th>Net P/L %</th>
-                        <th>Close</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {Array.isArray(positions) && positions.map((position, index) => (
-                        <tr key={index} className='stock-item'>
-                            <td>{position.stock.symbol}</td>
-                            <td>{position.quantity}</td>
-                            <td>{position.average_price * position.quantity}</td>
-                            <td>{position.stock.price * position.quantity}</td>
-                            <td>{Math.round(position.average_price * 100) / 100}</td>
-                            <td>{position.stock.price}</td>
-                            <td>
-                                <Change data={(position.stock.price - position.average_price) * position.quantity}>
-                                    {Math.round((position.stock.price - position.average_price) * position.quantity * 100) / 100}
-                                </Change>
-                            </td>
-                            <td>
-                                <Change data={((position.stock.price - position.average_price) * position.quantity) / (position.average_price * position.quantity)}>
-                                    {Math.round(((position.stock.price - position.average_price) * position.quantity) / (position.average_price * position.quantity) * 10000) / 100}
-                                </Change>
-                            </td>
-                            <td>
-                                <button className='sell' onClick={() => closePosition(position.id)}>Close</button>
-                            </td>
+                <table className='stock-table'>
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Volume</th>
+                            <th>Purchase Value</th>
+                            <th>Market Value</th>
+                            <th>Open Price</th>
+                            <th>Market Price</th>
+                            <th>Net Profit/Loss</th>
+                            <th>Net P/L %</th>
+                            <th>Close</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {Array.isArray(positions) && positions.map((position, index) => (
+                            <tr key={index} className='stock-item'>
+                                <td>{position.stock.symbol}</td>
+                                <td>{position.quantity}</td>
+                                <td>{position.average_price * position.quantity}</td>
+                                <td>{position.stock.price * position.quantity}</td>
+                                <td>{Math.round(position.average_price * 100) / 100}</td>
+                                <td>{position.stock.price}</td>
+                                <td>
+                                    <Change data={(position.stock.price - position.average_price) * position.quantity}>
+                                        {Math.round((position.stock.price - position.average_price) * position.quantity * 100) / 100}
+                                    </Change>
+                                </td>
+                                <td>
+                                    <Change data={((position.stock.price - position.average_price) * position.quantity) / (position.average_price * position.quantity)}>
+                                        {Math.round(((position.stock.price - position.average_price) * position.quantity) / (position.average_price * position.quantity) * 10000) / 100}
+                                    </Change>
+                                </td>
+                                <td>
+                                    <button className='sell' onClick={() => closePosition(position.id)}>Close</button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             </div>
         </div>
     )
