@@ -3,7 +3,7 @@ from user_auth.models import User
 
 
 class Stock(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='stocks')
+    users = models.ManyToManyField(User, related_name='stocks')
     symbol = models.CharField(null=False, max_length=10)
     name = models.CharField(null=False, max_length=100)
     price = models.FloatField()
@@ -26,8 +26,6 @@ class Stock(models.Model):
     earningsAnnouncement = models.CharField(null=True, max_length=100)
     sharesOutstanding = models.IntegerField()
     timestamp = models.IntegerField()
-    owned = models.BooleanField(default=False)
-    followed = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -56,6 +54,4 @@ class Stock(models.Model):
             "earningsAnnouncement": self.earningsAnnouncement,
             "sharesOutstanding": self.sharesOutstanding,
             "timestamp": self.timestamp,
-            "owned": self.owned,
-            "followed": self.followed
         }

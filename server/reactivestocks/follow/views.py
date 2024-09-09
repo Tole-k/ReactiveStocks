@@ -1,3 +1,4 @@
+from pickle import TRUE
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Stock
@@ -7,6 +8,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+updater = True
 
 APIKEY = 'smwtbHsasmvEoGzGfDTq5Wo5xcqVHQvu'
 
@@ -18,9 +20,6 @@ def update(stocks):
     data = requests.get(
         f'https://financialmodelingprep.com/api/v3/quote/{symbols}?apikey={APIKEY}').json()
     for i, stock in enumerate(stocks):
-        if (not stock.followed) and (not stock.owned):
-            stock.delete()
-            continue
         stock.price = data[i]['price']
         stock.changesPercentage = data[i]['changesPercentage']
         stock.change = data[i]['change']
@@ -49,10 +48,11 @@ class FollowView(APIView):
     def get(self, request):
         if not Stock.objects.exists():
             return Response(status=status.HTTP_204_NO_CONTENT)
-        stocks = Stock.objects.filter(user=request.user)
-        update(stocks)
+        stocks = Stock.objects.filter(users__id=request.user.id)
+        if updater:
+            update(stocks)
         serializedData = StockSerializer(
-            Stock.objects.filter(user=request.user), many=True).data
+            Stock.objects.filter(users__id=request.user.id), many=True).data
         return Response(serializedData)
 
 
@@ -70,19 +70,18 @@ class AddStockView(APIView):
 
     def post(self, request):
         symbol = request.data['symbol']
-        if Stock.objects.filter(symbol=symbol, user=request.user).exists():
-            if Stock.objects.get(symbol=symbol, user=request.user).followed:
+        if Stock.objects.filter(symbol=symbol).exists():
+            if Stock.objects.get(symbol=symbol, users__id=request.user.id):
                 return Response(status=status.HTTP_409_CONFLICT)
-            stock = Stock.objects.get(symbol=symbol, user=request.user)
-            stock.followed = True
+            stock = Stock.objects.get(symbol=symbol)
+            stock.users.add(request.user)
             stock.save()
             return Response(StockSerializer(stock).data, status=status.HTTP_201_CREATED)
         else:
             data = requests.get(
-                f'https://financialmodelingprep.com/api/v3/quote/{symbol}?apikey={APIKEY}').json()
-            data[0]['followed'] = True
-            data[0]['user'] = request.user.id
-            serializer = StockSerializer(data=data[0])
+                f'https://financialmodelingprep.com/api/v3/quote/{symbol}?apikey={APIKEY}').json()[0]
+            data['users'] = [request.user.id]
+            serializer = StockSerializer(data=data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -97,6 +96,6 @@ class RemoveStockView(APIView):
             stock = Stock.objects.get(pk=pk)
         except Stock.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        stock.followed = False
+        stock.users.remove(request.user)
         stock.save()
         return Response(status=status.HTTP_204_NO_CONTENT)

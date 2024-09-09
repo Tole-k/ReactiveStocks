@@ -31,7 +31,6 @@ class UserView(APIView):
 
     def get(self, request):
         user = request.user
-        print(user)
         return Response(user.serialize())
 
 

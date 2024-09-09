@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'follow',
     'portfolio',
     'user_auth',
+    'piechart',
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
