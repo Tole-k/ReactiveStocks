@@ -56,7 +56,6 @@ export default function Portfolio() {
     }, [accessToken]);
 
     const openPosition = async (e) => {
-        console.log(e)
         const positionData = {
             symbol,
             quantity,
@@ -68,19 +67,18 @@ export default function Portfolio() {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${accessToken}`
             }
-        }).then((response) => {
-            console.log(response);
-            return response.data;
-        }).then((data) => {
+        }).then((response) => response.data).then((data) => {
             if (positions.some((position) => position.stock.symbol === symbol)) {
-                setPositions((prev) => prev.map((position) => {
-                    if (position.stock.symbol === data.symbol) {
+                const next_positions = positions.map((position) => {
+                    if (position.stock.symbol === symbol) {
                         return {
-                            data
+                            ...position,
+                            ...data
                         };
                     }
                     return position;
-                }));
+                });
+                setPositions(next_positions);
             }
             else {
                 setPositions((prev) => [...prev, data]);
@@ -147,7 +145,7 @@ export default function Portfolio() {
 
     return (
         <div className='whole-page'>
-            <h1>{user}'s Portfolio</h1>
+            <h1>Portfolio</h1>
             <div className='portfolio-container'>
                 <form className='portfolio-form'>
                     <div>
@@ -180,48 +178,50 @@ export default function Portfolio() {
                     <button className='buy' onClick={openPosition}>Open</button>
                 </form>
             </div>
-            <div className='tableWrap'>
-                <table className='stock-table'>
-                    <thead>
-                        <tr>
-                            <th>Symbol</th>
-                            <th>Volume</th>
-                            <th>Purchase Value</th>
-                            <th>Market Value</th>
-                            <th>Open Price</th>
-                            <th>Market Price</th>
-                            <th>Net Profit/Loss</th>
-                            <th>Net P/L %</th>
-                            <th>Close</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {Array.isArray(positions) && positions.map((position, index) => (
-                            <tr key={index} className='stock-item'>
-                                <td>{position.stock.symbol}</td>
-                                <td>{position.quantity}</td>
-                                <td>{position.average_price * position.quantity}</td>
-                                <td>{position.stock.price * position.quantity}</td>
-                                <td>{Math.round(position.average_price * 100) / 100}</td>
-                                <td>{position.stock.price}</td>
-                                <td>
-                                    <Change data={(position.stock.price - position.average_price) * position.quantity}>
-                                        {Math.round((position.stock.price - position.average_price) * position.quantity * 100) / 100}
-                                    </Change>
-                                </td>
-                                <td>
-                                    <Change data={((position.stock.price - position.average_price) * position.quantity) / (position.average_price * position.quantity)}>
-                                        {Math.round(((position.stock.price - position.average_price) * position.quantity) / (position.average_price * position.quantity) * 10000) / 100}
-                                    </Change>
-                                </td>
-                                <td>
-                                    <button className='sell' onClick={() => closePosition(position.id)}>Close</button>
-                                </td>
+            {positions.length > 0 &&
+                <div className='tableWrap'>
+                    <table className='stock-table'>
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Volume</th>
+                                <th>Purchase Value</th>
+                                <th>Market Value</th>
+                                <th>Open Price</th>
+                                <th>Market Price</th>
+                                <th>Net Profit/Loss</th>
+                                <th>Net P/L %</th>
+                                <th>Close</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                            {Array.isArray(positions) && positions.map((position, index) => (
+                                <tr key={index} className='stock-item'>
+                                    <td>{position.stock.symbol}</td>
+                                    <td>{position.quantity}</td>
+                                    <td>{position.average_price * position.quantity}</td>
+                                    <td>{position.stock.price * position.quantity}</td>
+                                    <td>{Math.round(position.average_price * 100) / 100}</td>
+                                    <td>{position.stock.price}</td>
+                                    <td>
+                                        <Change data={(position.stock.price - position.average_price) * position.quantity}>
+                                            {Math.round((position.stock.price - position.average_price) * position.quantity * 100) / 100}
+                                        </Change>
+                                    </td>
+                                    <td>
+                                        <Change data={((position.stock.price - position.average_price) * position.quantity) / (position.average_price * position.quantity)}>
+                                            {Math.round(((position.stock.price - position.average_price) * position.quantity) / (position.average_price * position.quantity) * 10000) / 100}
+                                        </Change>
+                                    </td>
+                                    <td>
+                                        <button className='sell' onClick={() => closePosition(position.id)}>Close</button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            }
         </div>
     )
 }

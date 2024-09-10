@@ -1,4 +1,5 @@
 from pickle import TRUE
+from turtle import st
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Stock
@@ -46,7 +47,7 @@ class FollowView(APIView):
     permission_classes = (IsAuthenticated, )
 
     def get(self, request):
-        if not Stock.objects.exists():
+        if not Stock.objects.filter(users__id=request.user.id).exists():
             return Response(status=status.HTTP_204_NO_CONTENT)
         stocks = Stock.objects.filter(users__id=request.user.id)
         if updater:
@@ -71,7 +72,7 @@ class AddStockView(APIView):
     def post(self, request):
         symbol = request.data['symbol']
         if Stock.objects.filter(symbol=symbol).exists():
-            if Stock.objects.get(symbol=symbol, users__id=request.user.id):
+            if Stock.objects.filter(symbol=symbol, users__id=request.user.id).exists():
                 return Response(status=status.HTTP_409_CONFLICT)
             stock = Stock.objects.get(symbol=symbol)
             stock.users.add(request.user)
@@ -80,10 +81,12 @@ class AddStockView(APIView):
         else:
             data = requests.get(
                 f'https://financialmodelingprep.com/api/v3/quote/{symbol}?apikey={APIKEY}').json()[0]
-            data['users'] = [request.user.id]
             serializer = StockSerializer(data=data)
             if serializer.is_valid():
                 serializer.save()
+                stock = Stock.objects.get(symbol=symbol)
+                stock.users.add(request.user)
+                stock.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

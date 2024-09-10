@@ -3,7 +3,7 @@ from user_auth.models import User
 
 
 class Stock(models.Model):
-    users = models.ManyToManyField(User, related_name='stocks')
+    users = models.ManyToManyField(User, blank=True, related_name='stocks')
     symbol = models.CharField(null=False, max_length=10)
     name = models.CharField(null=False, max_length=100)
     price = models.FloatField()

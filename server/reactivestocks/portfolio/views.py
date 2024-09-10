@@ -65,7 +65,7 @@ class OpenPositionView(APIView):
                 data['quantity']), average_price=float(data['average_price']), timestamp=data['date'], user=request.user)
             position.save()
             stock.save()
-            return JsonResponse(position.serialize(), status=status.HTTP_201_CREATED)
+            return JsonResponse(PositionSerializer(position).data, status=status.HTTP_201_CREATED)
 
 
 class ClosePositionView(APIView):
@@ -76,5 +76,7 @@ class ClosePositionView(APIView):
             position = Position.objects.get(pk=pk)
         except Position.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+        stock = position.stock
+        stock.users.remove(request.user)
         position.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

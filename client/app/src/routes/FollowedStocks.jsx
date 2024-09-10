@@ -65,15 +65,7 @@ export default function FollowedStocks() {
             console.log(response);
             return response.data;
         }).then((data) => {
-            if (stocks.some((stock) => stock.symbol === symbol)) {
-                setStocks((prev) => prev.map((stock) => {
-                    if (stock.symbol === data.symbol) {
-                        stock.followed = true;
-                    }
-                    return stock;
-                }));
-            }
-            else {
+            if (!stocks.some((stock) => stock.symbol === symbol)) {
                 setStocks((prev) => [...prev, data]);
             }
             setEnteredText("");
@@ -90,12 +82,7 @@ export default function FollowedStocks() {
                 'Authorization': `Bearer ${accessToken}`
             }
         });
-        setStocks((prev) => prev.map((stock) => {
-            if (stock.id === id) {
-                stock.followed = false;
-            }
-            return stock;
-        }));
+        setStocks(stocks.filter((stock) => stock.id !== id));
     }
 
     // eslint-disable-next-line react/prop-types
@@ -153,7 +140,7 @@ export default function FollowedStocks() {
                     )) : null}
                 </div>
             </div>
-            {stocks.filter(stock => stock.followed).length > 0 &&
+            {stocks.length > 0 &&
                 <div className='tableWrap'>
                     <table className='stock-table'>
                         <thead>
@@ -168,7 +155,7 @@ export default function FollowedStocks() {
                             </tr>
                         </thead>
                         <tbody>
-                            {Array.isArray(stocks) && stocks.filter(stock => stock.followed).map((stock, index) => (
+                            {Array.isArray(stocks) && stocks.map((stock, index) => (
                                 <tr key={index} className='stock-item'>
                                     <td>{stock.symbol}</td>
                                     <td>{stock.name}</td>
