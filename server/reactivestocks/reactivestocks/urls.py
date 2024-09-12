@@ -23,6 +23,7 @@ urlpatterns = [
     path('follow/', include('follow.urls')),
     path('portfolio/', include('portfolio.urls')),
     path('user_auth/', include('user_auth.urls')),
+    path('piechart/', include('piechart.urls')),
     path('token/',
          jwt_views.TokenObtainPairView.as_view(),
          name='token_obtain_pair'),

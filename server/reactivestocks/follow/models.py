@@ -22,7 +22,7 @@ class Stock(models.Model):
     open = models.FloatField()
     previousClose = models.FloatField()
     eps = models.FloatField()
-    pe = models.FloatField()
+    pe = models.FloatField(null=True)
     earningsAnnouncement = models.CharField(null=True, max_length=100)
     sharesOutstanding = models.IntegerField()
     timestamp = models.IntegerField()

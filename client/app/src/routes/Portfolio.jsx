@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Dropdown from 'react-bootstrap/Dropdown';
 import styled from "styled-components";
 import axios from '../axiosConfig';
 
@@ -12,48 +13,87 @@ export default function Portfolio() {
     const [enteredText, setEnteredText] = useState('');
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [user, setUser] = useState(null);
+    const [portfolios, setPortfolios] = useState([]);
+    const [chosen_portfolio, setChosenPortfolio] = useState(null);
     const accessToken = localStorage.getItem('access_token');
     const enable_suggestions = true;
 
     useEffect(() => {
-        const fetchPositions = async () => {
-            console.log("fetching stocks");
+        const checkAuth = async () => {
             try {
-                const response = await axios.get("http://127.0.0.1:8000/portfolio/", {
+                const response = await axios.get("http://127.0.0.1:8000/user_auth/whoami/", {
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${accessToken}`
                     }
                 });
-                console.log(response);
                 if (response.status === 200) {
-                    setPositions(response.data);
+                    setIsAuthenticated(true);
+                    setUser(response.data.username);
+                }
+            } catch (error) {
+                setIsAuthenticated(false);
+                window.location.href = '/user_auth/login';
+            }
+        };
+
+        checkAuth();
+    }, [accessToken]);
+
+    useEffect(() => {
+        const fetchPortfolios = async () => {
+            try {
+                const response = await axios.get("http://127.0.0.1:8000/piechart/", {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+                if (response.status === 204) {
+                    console.log("No portfolios found");
+                } else {
+                    setPortfolios(response.data);
                 }
             } catch (error) {
                 console.log(error);
             }
         };
-        const checkAuth = async () => {
-            await axios.get("http://127.0.0.1:8000/user_auth/whoami/", {
-                method: "GET",
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`
+
+        if (isAuthenticated) {
+            fetchPortfolios();
+        }
+    }, [accessToken, isAuthenticated]);
+
+    useEffect(() => {
+        const fetchPositions = async () => {
+            if (chosen_portfolio) {
+                try {
+                    const response = await axios.get(`http://127.0.0.1:8000/portfolio/${chosen_portfolio.id}/`, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${accessToken}`
+                        }
+                    });
+                    if (response.status === 200) {
+                        setPositions(response.data);
+                    }
+                } catch (error) {
+                    console.log(error);
                 }
-            }).then((response) => {
-                console.log(response);
-                if (response.status === 200) {
-                    console.log(response.data)
-                    setIsAuthenticated(true);
-                    setUser(response.data.username);
-                }
-            }).catch((error) => {
-                console.log(error);
-            });
+            }
         };
-        checkAuth();
-        fetchPositions();
-    }, [accessToken]);
+
+        if (chosen_portfolio) {
+            fetchPositions();
+        }
+    }, [accessToken, chosen_portfolio]);
+
+    useEffect(() => {
+        const storedPortfolio = localStorage.getItem('chosen_portfolio');
+        if (storedPortfolio) {
+            setChosenPortfolio(JSON.parse(storedPortfolio));
+        }
+    }, []);
 
     const openPosition = async (e) => {
         const positionData = {
@@ -62,7 +102,7 @@ export default function Portfolio() {
             average_price: price,
             date
         };
-        axios.post("http://127.0.0.1:8000/portfolio/open/", { positionData }, {
+        axios.post(`http://127.0.0.1:8000/portfolio/open/${chosen_portfolio.id}/`, positionData, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${accessToken}`
@@ -143,9 +183,47 @@ export default function Portfolio() {
         setSuggestions([]);
     }
 
+    const choose_portfolio = (portfolio) => {
+        localStorage.setItem('chosen_portfolio', JSON.stringify(portfolio));
+        setChosenPortfolio(portfolio);
+    }
+
+    const create_new_portfolio = async () => {
+        const portfolioName = prompt("Enter the name of the new portfolio:");
+        if (portfolioName) {
+            try {
+                const response = await axios.post("http://127.0.0.1:8000/piechart/add/", { name: portfolioName }, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+                if (response.status === 201) {
+                    setPortfolios((prev) => [...prev, response.data]);
+                    choose_portfolio(response.data);
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+    };
+
     return (
         <div className='whole-page'>
-            <h1>Portfolio</h1>
+            <Dropdown>
+                <Dropdown.Toggle variant="success" id="dropdown-basic">
+                    {chosen_portfolio ? chosen_portfolio.name : "Select Portfolio"}
+                </Dropdown.Toggle>
+
+                <Dropdown.Menu>
+                    {portfolios.map((portfolio, index) => (
+                        <Dropdown.Item key={index} onClick={() => choose_portfolio(portfolio)}>
+                            {portfolio.name}
+                        </Dropdown.Item>
+                    ))}
+                    <Dropdown.Item onClick={create_new_portfolio}>Create New Portfolio</Dropdown.Item>
+                </Dropdown.Menu>
+            </Dropdown>
             <div className='portfolio-container'>
                 <form className='portfolio-form'>
                     <div>
@@ -195,7 +273,7 @@ export default function Portfolio() {
                             </tr>
                         </thead>
                         <tbody>
-                            {Array.isArray(positions) && positions.map((position, index) => (
+                            {chosen_portfolio != null && Array.isArray(positions) && positions.map((position, index) => (
                                 <tr key={index} className='stock-item'>
                                     <td>{position.stock.symbol}</td>
                                     <td>{position.quantity}</td>
