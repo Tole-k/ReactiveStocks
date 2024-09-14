@@ -139,7 +139,7 @@ table.stock-table td {
   padding: 12px 15px;
   border: 1px solid #ddd;
   text-align: center;
-  width: 150px;
+  width: 200px;
 }
 
 table.stock-table th {
@@ -190,4 +190,21 @@ thead tr th {
 
 .search-inner {
   display: flex;
+}
+.sell-inputs {
+    display: flex;
+    gap: 10px;
+}
+
+.sell-inputs label {
+    display: flex;
+    flex-direction: column;
+}
+
+.sell-inputs input{
+    width: 80px; 
+}
+.sell-inputs button {
+    margin-top: 20px;
+    margin-left: 20px;
 }

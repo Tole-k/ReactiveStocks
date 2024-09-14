@@ -15,6 +15,8 @@ export default function Portfolio() {
     const [user, setUser] = useState(null);
     const [portfolios, setPortfolios] = useState([]);
     const [chosen_portfolio, setChosenPortfolio] = useState(null);
+    const [sellAmount, setSellAmount] = useState(0.0);
+    const [sellPrice, setSellPrice] = useState(0.0);
     const accessToken = localStorage.getItem('access_token');
     const enable_suggestions = true;
 
@@ -100,8 +102,9 @@ export default function Portfolio() {
             symbol,
             quantity,
             average_price: price,
-            date
+            timestamp: date
         };
+        console.log(positionData);
         axios.post(`http://127.0.0.1:8000/portfolio/open/${chosen_portfolio.id}/`, positionData, {
             headers: {
                 'Content-Type': 'application/json',
@@ -132,15 +135,35 @@ export default function Portfolio() {
     };
 
     const closePosition = async (id) => {
-        await axios.delete(`http://127.0.0.1:8000/portfolio/close/${id}/`, {
+        const sellData = {
+            average_price: sellPrice,
+            quantity: sellAmount
+        };
+        console.log(sellData);
+        await axios.post(`http://127.0.0.1:8000/portfolio/close/${id}/`, sellData, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${accessToken}`
             }
+        }).then((response) => response.data).then((data) => {
+            if (data.quantity === 0) {
+                setPositions((prev) => prev.filter((stock) => stock.id !== id));
+            }
+            else {
+                const next_positions = positions.map((position) => {
+                    if (position.id === id) {
+                        return {
+                            ...position,
+                            ...data
+                        };
+                    }
+                    return position;
+                });
+                setPositions(next_positions);
+            }
         }).catch((error) => {
             console.log(error);
         });
-        setPositions((prev) => prev.filter((stock) => stock.id !== id));
     }
 
     // eslint-disable-next-line react/prop-types
@@ -224,80 +247,95 @@ export default function Portfolio() {
                     <Dropdown.Item onClick={create_new_portfolio}>Create New Portfolio</Dropdown.Item>
                 </Dropdown.Menu>
             </Dropdown>
-            <div className='portfolio-container'>
-                <form className='portfolio-form'>
-                    <div>
-                        <label>
-                            Symbol:
-                            <br></br>
-                            <input type="text" placeholder="Stock Symbol..." value={enteredText} onChange={searchBarChange} />
-                        </label>
-                        <div className='dropdown' id='portfolio'>
-                            {suggestions.length ? suggestions.map((suggestion, index) => (
-                                <div key={index} className='dropdown-row' onClick={() => suggestionsClick(suggestion.symbol)}>{suggestion.symbol} ({suggestion.name})</div>
-                            )) : null}
-                        </div>
+            {portfolios.length > 0 &&
+                <div>
+                    <div className='portfolio-container'>
+                        <form className='portfolio-form'>
+                            <div>
+                                <label>
+                                    Symbol:
+                                    <br></br>
+                                    <input type="text" placeholder="Stock Symbol..." value={enteredText} onChange={searchBarChange} />
+                                </label>
+                                <div className='dropdown' id='portfolio'>
+                                    {suggestions.length ? suggestions.map((suggestion, index) => (
+                                        <div key={index} className='dropdown-row' onClick={() => suggestionsClick(suggestion.symbol)}>{suggestion.symbol} ({suggestion.name})</div>
+                                    )) : null}
+                                </div>
+                            </div>
+                            <label>
+                                Quantity:
+                                <br></br>
+                                <input type="number" placeholder="0" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+                            </label>
+                            <label>
+                                Price:
+                                <br></br>
+                                <input type="number" placeholder='0' value={price} onChange={(e) => setPrice(e.target.value)} />
+                            </label>
+                            <label>
+                                Date:
+                                <br></br>
+                                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+                            </label>
+                            <button className='buy' onClick={openPosition}>Open</button>
+                        </form>
                     </div>
-                    <label>
-                        Quantity:
-                        <br></br>
-                        <input type="number" placeholder="0" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
-                    </label>
-                    <label>
-                        Price:
-                        <br></br>
-                        <input type="number" placeholder='0' value={price} onChange={(e) => setPrice(e.target.value)} />
-                    </label>
-                    <label>
-                        Date:
-                        <br></br>
-                        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-                    </label>
-                    <button className='buy' onClick={openPosition}>Open</button>
-                </form>
-            </div>
-            {positions.length > 0 &&
-                <div className='tableWrap'>
-                    <table className='stock-table'>
-                        <thead>
-                            <tr>
-                                <th>Symbol</th>
-                                <th>Volume</th>
-                                <th>Purchase Value</th>
-                                <th>Market Value</th>
-                                <th>Open Price</th>
-                                <th>Market Price</th>
-                                <th>Net Profit/Loss</th>
-                                <th>Net P/L %</th>
-                                <th>Close</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {chosen_portfolio != null && Array.isArray(positions) && positions.map((position, index) => (
-                                <tr key={index} className='stock-item'>
-                                    <td>{position.stock.symbol}</td>
-                                    <td>{position.quantity}</td>
-                                    <td>{position.average_price * position.quantity}</td>
-                                    <td>{position.stock.price * position.quantity}</td>
-                                    <td>{Math.round(position.average_price * 100) / 100}</td>
-                                    <td>{position.stock.price}</td>
-                                    <td>
-                                        <Change data={(position.stock.price - position.average_price) * position.quantity}>
-                                            {Math.round((position.stock.price - position.average_price) * position.quantity * 100) / 100}
-                                        </Change>
-                                    </td>
-                                    <td>
-                                        <Change data={((position.stock.price - position.average_price) * position.quantity) / (position.average_price * position.quantity)}>
-                                            {Math.round(((position.stock.price - position.average_price) * position.quantity) / (position.average_price * position.quantity) * 10000) / 100}
-                                        </Change>
-                                    </td>
-                                    <td>
-                                        <button className='sell' onClick={() => closePosition(position.id)}>Close</button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                    {positions.length > 0 &&
+                        <div className='tableWrap'>
+                            <table className='stock-table'>
+                                <thead>
+                                    <tr>
+                                        <th>Symbol</th>
+                                        <th>Volume</th>
+                                        <th>Purchase Value</th>
+                                        <th>Market Value</th>
+                                        <th>Avg Open Price</th>
+                                        <th>Market Price</th>
+                                        <th>Net Profit/Loss</th>
+                                        <th>Net P/L %</th>
+                                        <th>Sell</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {chosen_portfolio != null && Array.isArray(positions) && positions.map((position, index) => (
+                                        <tr key={index} className='stock-item'>
+                                            <td>{position.stock.symbol}</td>
+                                            <td>{position.quantity}</td>
+                                            <td>{Math.round(position.average_price * position.quantity * 100) / 100}</td>
+                                            <td>{Math.round(position.stock.price * position.quantity * 100) / 100}</td>
+                                            <td>{Math.round(position.average_price * 100) / 100}</td>
+                                            <td>{position.stock.price}</td>
+                                            <td>
+                                                <Change data={(position.stock.price - position.average_price) * position.quantity}>
+                                                    {Math.round((position.stock.price - position.average_price) * position.quantity * 100) / 100}
+                                                </Change>
+                                            </td>
+                                            <td>
+                                                <Change data={((position.stock.price - position.average_price) * position.quantity) / (position.average_price * position.quantity)}>
+                                                    {Math.round(((position.stock.price - position.average_price) * position.quantity) / (position.average_price * position.quantity) * 10000) / 100}
+                                                </Change>
+                                            </td>
+                                            <td>
+                                                <div className="sell-inputs">
+                                                    <label>
+                                                        Price:
+                                                        <input type='number' placeholder='0' onChange={(e) => setSellPrice(e.target.value)} />
+                                                    </label>
+                                                    <label>
+                                                        Quantity:
+                                                        <input type='number' placeholder='0' onChange={(e) => setSellAmount(e.target.value)} />
+                                                    </label>
+                                                    <button className='sell' onClick={() => closePosition(position.id)}>Sell</button>
+                                                </div>
+
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    }
                 </div>
             }
         </div>

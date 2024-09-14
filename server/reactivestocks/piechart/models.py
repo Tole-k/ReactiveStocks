@@ -1,8 +1,6 @@
 from django.db import models
 from user_auth.models import User
 
-# Create your models here.
-
 
 class Portfolio(models.Model):
     name = models.CharField(max_length=100)
