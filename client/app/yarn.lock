@@ -836,6 +836,11 @@
     "@webassemblyjs/ast" "1.12.1"
     "@xtuc/long" "4.2.2"
 
+"@webcarrot/xirr@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@webcarrot/xirr/-/xirr-3.0.1.tgz#bb4c75721bce0c69b1c24cf1234deb3a98ad338e"
+  integrity sha512-7g8sl+sLfFnCK0nlaMDUD4/ZClmRZIWgMX1aKtGsa4yxABlzAFORSEq5f+Fl0XNEIjdVVlEiHW1EEWCS/0zjGw==
+
 "@xtuc/ieee754@^1.2.0":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@xtuc/ieee754/-/ieee754-1.2.0.tgz#eef014a3145ae477a1cbc00cd1e552336dceb790"

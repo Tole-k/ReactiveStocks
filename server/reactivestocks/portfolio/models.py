@@ -21,7 +21,8 @@ class Position(models.Model):
         self.quantity = sum(
             [transaction.quantity for transaction in self.transactions.all()])
         self.average_price = sum(
-            [max(transaction.quantity, 0) * transaction.average_price for transaction in self.transactions.all()]) / sum([max(transaction.quantity,0) for transaction in self.transactions.all()])
+            [max(transaction.quantity, 0) * transaction.average_price for transaction in self.transactions.all()]) / sum([max(transaction.quantity, 0) for transaction in self.transactions.all()])
+
     def serialize(self):
         return {
             "stock": self.stock.serialize(),
@@ -34,7 +35,7 @@ class Transaction(models.Model):
         Position, on_delete=models.CASCADE, related_name='transactions')
     quantity = models.FloatField()
     average_price = models.FloatField()
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField()
 
     def serialize(self):
         return {

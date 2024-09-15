@@ -3,17 +3,17 @@ from .models import Position, Transaction
 from follow.serializer import StockSerializer
 
 
-class PositionSerializer(serializers.ModelSerializer):
-    stock = StockSerializer()
-
-    class Meta:
-        model = Position
-        fields = '__all__'
-
-
 class TransactionSerializer(serializers.ModelSerializer):
-    position = PositionSerializer()
 
     class Meta:
         model = Transaction
+        fields = ('id', 'quantity', 'average_price', 'timestamp')
+
+
+class PositionSerializer(serializers.ModelSerializer):
+    stock = StockSerializer()
+    transactions = TransactionSerializer(many=True)
+
+    class Meta:
+        model = Position
         fields = '__all__'

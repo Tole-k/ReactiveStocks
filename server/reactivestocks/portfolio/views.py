@@ -1,4 +1,6 @@
+from datetime import date, datetime
 from os import times
+from re import T
 import time
 from turtle import pos
 from django.http import JsonResponse
@@ -45,6 +47,7 @@ class OpenPositionView(APIView):
         try:
             portfolio = Portfolio.objects.get(pk=pk)
             data = request.data
+            print(data)
             symbol = data['symbol']
             stock = Stock.objects.filter(symbol=symbol).first()
             if stock is None:
@@ -66,9 +69,12 @@ class OpenPositionView(APIView):
                 position = Position.objects.create(
                     stock=stock, portfolio=portfolio, user=request.user, quantity=data['quantity'], average_price=data['average_price'])
 
-            Transaction.objects.create(
-                position=position, quantity=data['quantity'], average_price=data['average_price'], timestamp=data['timestamp'])
-
+            timestamp = data.get('timestamp', None)
+            if timestamp is None:
+                timestamp = time.time()
+            transaction = Transaction.objects.create(
+                position=position, quantity=data['quantity'], average_price=data['average_price'], timestamp=timestamp)
+            print(transaction.timestamp)
             position.update()
             position.save()
             return JsonResponse(PositionSerializer(position).data, status=status.HTTP_201_CREATED)
@@ -80,6 +86,7 @@ class OpenPositionView(APIView):
 
 
 class ClosePositionView(APIView):
+    permission_classes = (IsAuthenticated, )
 
     def post(self, request, pk):
         try:
@@ -91,14 +98,15 @@ class ClosePositionView(APIView):
             if position.quantity < float(data['quantity']):
                 return Response({"error": "Not enough shares to sell"}, status=status.HTTP_400_BAD_REQUEST)
 
-            position.save()
             Transaction.objects.create(
-                position=position, quantity=-float(data['quantity']), average_price=data['average_price'], timestamp=None)
+                position=position, quantity=-float(data['quantity']), average_price=data['average_price'], timestamp=datetime.now().isoformat())
             position.update()
-            position.save()
             if position.quantity == 0:
                 position.delete()
-            return JsonResponse(PositionSerializer(position).data, status=status.HTTP_201_CREATED)
+                return Response({"message": "Position closed successfully"}, status=status.HTTP_200_OK)
+            else:
+                position.save()
+                return JsonResponse(PositionSerializer(position).data, status=status.HTTP_201_CREATED)
         except Exception as e:
             print(e)
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

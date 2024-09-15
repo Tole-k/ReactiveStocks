@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
 import styled from "styled-components";
 import axios from '../axiosConfig';
+import xirr from '@webcarrot/xirr';
 
 export default function Portfolio() {
     const [positions, setPositions] = useState([]);
@@ -64,7 +65,8 @@ export default function Portfolio() {
         if (isAuthenticated) {
             fetchPortfolios();
         }
-    }, [accessToken, isAuthenticated]);
+        console.log(positions);
+    }, [accessToken, isAuthenticated, positions]);
 
     useEffect(() => {
         const fetchPositions = async () => {
@@ -128,6 +130,9 @@ export default function Portfolio() {
             }
             setEnteredText("");
             setSuggestions([]);
+            setQuantity(0.0);
+            setPrice(0.0);
+            setDate("");
         }).catch((error) => {
             console.log(error);
         });
@@ -145,8 +150,8 @@ export default function Portfolio() {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${accessToken}`
             }
-        }).then((response) => response.data).then((data) => {
-            if (data.quantity === 0) {
+        }).then((response) => {
+            if (response.status === 200) {
                 setPositions((prev) => prev.filter((stock) => stock.id !== id));
             }
             else {
@@ -154,7 +159,7 @@ export default function Portfolio() {
                     if (position.id === id) {
                         return {
                             ...position,
-                            ...data
+                            ...response.data
                         };
                     }
                     return position;
@@ -164,6 +169,8 @@ export default function Portfolio() {
         }).catch((error) => {
             console.log(error);
         });
+        setSellAmount(0.0);
+        setSellPrice(0.0);
     }
 
     // eslint-disable-next-line react/prop-types
@@ -230,6 +237,36 @@ export default function Portfolio() {
             }
         }
     };
+    const calculatePositionXirr = (position) => {
+        const cashFlows = []
+        position.transactions.forEach((transaction) => {
+            cashFlows.push({
+                amount: -transaction.quantity * transaction.average_price,
+                date: new Date(transaction.timestamp)
+            });
+        });
+        cashFlows.push({
+            amount: position.quantity * position.stock.price,
+            date: new Date()
+        });
+        return xirr(cashFlows);
+    };
+    const calculatePortfolioXirr = (positions) => {
+        const cashFlows = []
+        positions.forEach((position) => {
+            position.transactions.forEach((transaction) => {
+                cashFlows.push({
+                    amount: -transaction.quantity * transaction.average_price,
+                    date: new Date(transaction.timestamp)
+                });
+            });
+            cashFlows.push({
+                amount: position.quantity * position.stock.price,
+                date: new Date()
+            });
+        });
+        return xirr(cashFlows);
+    };
 
     return (
         <div className='whole-page'>
@@ -294,6 +331,7 @@ export default function Portfolio() {
                                         <th>Market Price</th>
                                         <th>Net Profit/Loss</th>
                                         <th>Net P/L %</th>
+                                        <th>XIRR</th>
                                         <th>Sell</th>
                                     </tr>
                                 </thead>
@@ -313,7 +351,12 @@ export default function Portfolio() {
                                             </td>
                                             <td>
                                                 <Change data={((position.stock.price - position.average_price) * position.quantity) / (position.average_price * position.quantity)}>
-                                                    {Math.round(((position.stock.price - position.average_price) * position.quantity) / (position.average_price * position.quantity) * 10000) / 100}
+                                                    {Math.round(((position.stock.price - position.average_price) * position.quantity) / (position.average_price * position.quantity) * 10000) / 100}%
+                                                </Change>
+                                            </td>
+                                            <td>
+                                                <Change data={calculatePositionXirr(position)}>
+                                                    {Math.round(calculatePositionXirr(position) * 10000) / 100}%
                                                 </Change>
                                             </td>
                                             <td>
@@ -334,6 +377,16 @@ export default function Portfolio() {
                                     ))}
                                 </tbody>
                             </table>
+                        </div>
+                    }
+                    {positions.length > 0 &&
+                        <div>
+                            <label>
+                                Portfolio XIRR:
+                                <Change data={calculatePortfolioXirr(positions)}>
+                                    {Math.round(calculatePortfolioXirr(positions) * 10000) / 100}%
+                                </Change>
+                            </label>
                         </div>
                     }
                 </div>
