@@ -4,13 +4,23 @@ from piechart.models import Portfolio
 from user_auth.models import User
 
 
-class Position(models.Model):
+class AbstractPosition(models.Model):
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='positions')
+        User, on_delete=models.CASCADE, related_name='%(class)s')
     stock = models.ForeignKey(
-        Stock, on_delete=models.CASCADE, related_name='positions')
+        Stock, on_delete=models.CASCADE, related_name='%(class)s')
     portfolio = models.ForeignKey(
-        Portfolio, on_delete=models.CASCADE, related_name='positions')
+        Portfolio, on_delete=models.CASCADE, related_name='%(class)s')
+
+    class Meta:
+        abstract = True
+
+
+class DummyPosition(AbstractPosition):
+    allocation = models.FloatField()
+
+
+class Position(AbstractPosition):
     quantity = models.FloatField(blank=True)
     average_price = models.FloatField(blank=True)
 

@@ -10,6 +10,7 @@ class Portfolio(models.Model):
     def serialize(self):
         return {
             'id': self.id,
-            'user': self.user.serialize(),
-            'positions': [position.serialize() for position in self.positions.all()]
+            'user': self.user.id,
+            'positions': [position.serialize() for position in self.position.all()],
+            'components': [position.serialize() for position in self.dummyposition.all()],
         }

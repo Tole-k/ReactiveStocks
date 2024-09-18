@@ -11,5 +11,5 @@ class User(AbstractUser):
             "username": self.username,
             "email": self.email,
             "stocks": [stock.serialize() for stock in self.stocks.all()],
-            "positions": [position.serialize() for position in self.positions.all()]
+            "portfolios": [portfolio.serialize() for portfolio in self.portfolios.all()],
         }
