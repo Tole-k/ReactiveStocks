@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Position, Transaction
+from .models import DummyPosition, Position, Transaction
 from follow.serializer import StockSerializer
 
 
@@ -16,4 +16,11 @@ class PositionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Position
+        fields = '__all__'
+
+
+class DummyPositionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = DummyPosition
         fields = '__all__'

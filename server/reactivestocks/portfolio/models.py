@@ -7,8 +7,6 @@ from user_auth.models import User
 class AbstractPosition(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='%(class)s')
-    stock = models.ForeignKey(
-        Stock, on_delete=models.CASCADE, related_name='%(class)s')
     portfolio = models.ForeignKey(
         Portfolio, on_delete=models.CASCADE, related_name='%(class)s')
 
@@ -17,10 +15,19 @@ class AbstractPosition(models.Model):
 
 
 class DummyPosition(AbstractPosition):
+    stock = models.CharField(max_length=100)
     allocation = models.FloatField()
+
+    def serialize(self):
+        return {
+            "stock": self.stock,
+            "allocation": self.allocation,
+        }
 
 
 class Position(AbstractPosition):
+    stock = models.ForeignKey(
+        Stock, on_delete=models.CASCADE, related_name='%(class)s')
     quantity = models.FloatField(blank=True)
     average_price = models.FloatField(blank=True)
 

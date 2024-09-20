@@ -5,40 +5,18 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import styled from "styled-components";
 import axios from '../axiosConfig';
 
-const data01 = [
-    { name: "Group A", value: 400 },
-    { name: "Group B", value: 300 },
-    { name: "Group C", value: 300 },
-    { name: "Group D", value: 200 }
-];
-const data02 = [
-    { name: "A1", value: 100 },
-    { name: "A2", value: 300 },
-    { name: "B1", value: 100 },
-    { name: "B2", value: 80 },
-    { name: "B3", value: 40 },
-    { name: "B4", value: 30 },
-    { name: "B5", value: 50 },
-    { name: "C1", value: 100 },
-    { name: "C2", value: 200 },
-    { name: "D1", value: 150 },
-    { name: "D2", value: 50 }
-];
-
 export default function PieCharts() {
     const [positions, setPositions] = useState([]);
     const [symbol, setSymbol] = useState("");
-    const [quantity, setQuantity] = useState(0.0);
-    const [price, setPrice] = useState(0.0);
-    const [date, setDate] = useState("");
+    const [allocation, setAllocation] = useState(0.0);
     const [suggestions, setSuggestions] = useState([]);
     const [enteredText, setEnteredText] = useState('');
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [user, setUser] = useState(null);
     const [portfolios, setPortfolios] = useState([]);
     const [chosen_portfolio, setChosenPortfolio] = useState(null);
-    const [sellAmount, setSellAmount] = useState(0.0);
-    const [sellPrice, setSellPrice] = useState(0.0);
+    const [proportions, setProportions] = useState([]);
+    const [Recommendations, setRecommendations] = useState([]);
     const accessToken = localStorage.getItem('access_token');
     const enable_suggestions = true;
     useEffect(() => {
@@ -113,43 +91,160 @@ export default function PieCharts() {
     }, [accessToken, chosen_portfolio]);
 
     useEffect(() => {
+        const fetchProportions = async () => {
+            if (chosen_portfolio) {
+                try {
+                    const response = await axios.get(`http://127.0.0.1:8000/portfolio/allocation/${chosen_portfolio.id}/`, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${accessToken}`
+                        }
+                    });
+                    if (response.status === 200) {
+                        setProportions(response.data);
+                    }
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+        };
+        if (chosen_portfolio) {
+            fetchProportions();
+        }
+    }, [accessToken, chosen_portfolio]);
+    useEffect(() => {
         const storedPortfolio = localStorage.getItem('chosen_portfolio');
         if (storedPortfolio) {
             setChosenPortfolio(JSON.parse(storedPortfolio));
         }
     }, []);
+    useEffect(() => {
+        setRecommendations([]);
+        const generate_recommendations = async () => {
+            const total_value = positions.reduce((acc, position) => acc + position.quantity * position.stock.price, 0);
+            let props = {};
+            for (const position of positions) {
+                let found = false;
+                for (const proportion of proportions) {
+                    if (position.stock.symbol === proportion.stock) {
+                        const desired_value = total_value * proportion.allocation;
+                        const current_value = position.quantity * position.stock.price;
+                        const difference = desired_value - current_value;
+                        const shares_of_difference = difference / position.stock.price;
+                        if (shares_of_difference > 0.5) {
+                            setRecommendations((prev) => [...prev, "Buy " + Math.round(shares_of_difference) + " shares of " + position.stock.symbol]);
+                        }
+                        else if (shares_of_difference < -0.5) {
+                            setRecommendations((prev) => [...prev, "Sell " + Math.round(Math.abs(shares_of_difference)) + " shares of " + position.stock.symbol]);
+                        }
+                        found = true;
+                        props[proportion.stock] = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    setRecommendations((prev) => [...prev, "Sell all shares of " + position.stock.symbol]);
+                }
+            }
+            for (const proportion of proportions) {
+                if (!props[proportion.stock]) {
+                    setRecommendations((prev) => [...prev, "Buy " + Math.round(total_value * proportion.allocation) + "$ worth of " + proportion.stock + " shares"]);
+                }
+            }
+        }
+        generate_recommendations();
+    }, [positions, proportions]);
     const choose_portfolio = (portfolio) => {
         localStorage.setItem('chosen_portfolio', JSON.stringify(portfolio));
         setChosenPortfolio(portfolio);
     }
 
-    const create_new_portfolio = async () => {
-        const portfolioName = prompt("Enter the name of the new portfolio:");
-        if (portfolioName) {
+    const fetchSuggestions = async (symbol) => {
+        if (symbol !== "") {
             try {
-                const response = await axios.post("http://127.0.0.1:8000/piechart/add/", { name: portfolioName }, {
+                const response = await axios.get(`http://127.0.0.1:8000/follow/suggestions/${symbol}/`, {
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${accessToken}`
                     }
                 });
-                if (response.status === 201) {
-                    setPortfolios((prev) => [...prev, response.data]);
-                    choose_portfolio(response.data);
-                }
+                setSuggestions(response.data);
             } catch (error) {
                 console.log(error);
             }
         }
-    };
+    }
+
+    const searchBarChange = (event) => {
+        setEnteredText(event.target.value);
+        setSymbol(event.target.value);
+        if (enable_suggestions)
+            fetchSuggestions(event.target.value);
+        if (!event.target.value) {
+            setSuggestions([]);
+        }
+    }
+
+    const suggestionsClick = (symbol) => {
+        setSymbol(symbol);
+        setEnteredText(symbol);
+        setSuggestions([]);
+    }
 
     const prepare_portfolio_data = () => {
-        const sum = positions.reduce((acc, position) => acc + position.quantity * position.average_price, 0);
+        const sum = positions.reduce((acc, position) => acc + position.quantity * position.stock.price, 0);
         const data = positions.map((position) => ({
             name: position.stock.symbol,
-            value: Math.round(position.quantity * position.average_price/sum*100)/100
+            value: Math.round(position.quantity * position.stock.price / sum * 100) / 100
         }));
         return data;
+    }
+
+    const prepare_allocation_data = () => {
+        const sum = proportions.reduce((acc, proportion) => acc + proportion.allocation, 0);
+        const data = proportions.map(proportion => ({
+            name: proportion.stock,
+            value: proportion.allocation
+        }));
+        if (sum < 1)
+            data.push({ name: "Unallocated", value: 1 - sum });
+        return data;
+    }
+
+    const add_allocation = async (e) => {
+        const data = {
+            symbol,
+            allocation,
+        }
+        await axios.post(`http://127.0.0.1:8000/piechart/add_allocation/${chosen_portfolio.id}/`, data, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${accessToken}`
+            }
+        }).then((response) => response.data).then((data) => {
+            if (proportions.some((proportion) => proportion.symbol === symbol)) {
+                const next_proportions = proportions.map((proportion) => {
+                    if (proportion.stock === symbol) {
+                        return {
+                            ...proportion,
+                            ...data
+                        };
+                    }
+                    return proportion;
+                });
+                setProportions(next_proportions)
+            }
+            else {
+                setProportions((prev) => [...prev, data]);
+            }
+            setEnteredText("");
+            setSuggestions([]);
+            setSymbol("");
+            setAllocation(0.0);
+        }).catch((error) => {
+            console.log(error);
+        });
+        e.preventDefault();
     }
     return (
         <div className="whole-page">
@@ -164,20 +259,77 @@ export default function PieCharts() {
                             {portfolio.name}
                         </Dropdown.Item>
                     ))}
-                    <Dropdown.Item onClick={create_new_portfolio}>Create New Portfolio</Dropdown.Item>
                 </Dropdown.Menu>
             </Dropdown>
-            <PieChart width={400} height={400}>
-                <Pie
-                    data={prepare_portfolio_data()}
-                    dataKey="value"
-                    cx={200}
-                    cy={200}
-                    outerRadius={60}
-                    fill="#8884d8"
-                    label={({ name, value }) => `${name}: ${100*value}%`}
-                />
-            </PieChart>
+            <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+                <div>
+                    <label>
+                        Current Portfolio
+                        <PieChart width={400} height={400}>
+                            <Pie
+                                data={prepare_portfolio_data()}
+                                dataKey="value"
+                                cx={200}
+                                cy={200}
+                                outerRadius={60}
+                                fill="#8884d8"
+                                label={({ name, value }) => `${name}: ${100 * value}%`}
+                            />
+                        </PieChart>
+                    </label>
+                    <div>
+                        <label>
+                            Rebalancing Recommendations:
+                            <ul>
+                                {Recommendations.map((recommendation, index) => (
+                                    <li key={index}>{recommendation}</li>
+                                ))}
+                            </ul>
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <label>
+                        Target Portfolio
+                        <PieChart width={400} height={400}>
+                            <Pie
+                                data={prepare_allocation_data()}
+                                dataKey="value"
+                                cx={200}
+                                cy={200}
+                                outerRadius={60}
+                                fill="#8884d8"
+                                label={({ name, value }) => `${name}: ${Math.round(10000 * value) / 100}%`}
+                            />
+                        </PieChart>
+                    </label>
+                    <div>
+                        <label>
+                            Edit Portfolio
+                            <form className='portfolio-form'>
+                                <div>
+                                    <label>
+                                        Symbol:
+                                        <br></br>
+                                        <input type="text" placeholder="Stock Symbol..." value={enteredText} onChange={searchBarChange} />
+                                    </label>
+                                    <div className='dropdown' id='portfolio'>
+                                        {suggestions.length ? suggestions.map((suggestion, index) => (
+                                            <div key={index} className='dropdown-row' onClick={() => suggestionsClick(suggestion.symbol)}>{suggestion.symbol} ({suggestion.name})</div>
+                                        )) : null}
+                                    </div>
+                                </div>
+                                <label>
+                                    Allocation:
+                                    <br></br>
+                                    <input type="number" placeholder="0" value={allocation} onChange={(e) => setAllocation(e.target.value)} min={0.0} max={1.0} step={0.1} />
+                                </label>
+                                <button className='buy' onClick={add_allocation}>Set</button>
+                            </form>
+                        </label>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }

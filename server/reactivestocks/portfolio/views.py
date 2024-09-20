@@ -1,13 +1,10 @@
-from datetime import date, datetime
-from os import times
-from re import T
+from datetime import datetime
 import time
-from turtle import pos
 from django.http import JsonResponse
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Position, Stock, Transaction, Portfolio
-from .serializer import PositionSerializer, TransactionSerializer
+from .models import DummyPosition, Position, Stock, Transaction, Portfolio
+from .serializer import PositionSerializer, DummyPositionSerializer
 from follow.serializer import StockSerializer
 import requests
 from follow.views import update
@@ -15,7 +12,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-updater = True
+updater = False
 APIKEY = 'smwtbHsasmvEoGzGfDTq5Wo5xcqVHQvu'
 
 
@@ -32,6 +29,24 @@ class PortfolioView(APIView):
             if updater:
                 update(stocks)
             serializedData = PositionSerializer(positions, many=True).data
+            return Response(serializedData)
+        except Portfolio.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            print(e)
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class PortfolioAllocationView(APIView):
+    permission_classes = (IsAuthenticated, )
+
+    def get(self, request, pk):
+        try:
+            if not DummyPosition.objects.filter(user=request.user).exists():
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            positions = DummyPosition.objects.filter(
+                user=request.user, portfolio=pk)
+            serializedData = DummyPositionSerializer(positions, many=True).data
             return Response(serializedData)
         except Portfolio.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
