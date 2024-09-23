@@ -13,7 +13,6 @@ export default function Portfolio() {
     const [suggestions, setSuggestions] = useState([]);
     const [enteredText, setEnteredText] = useState('');
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [user, setUser] = useState(null);
     const [portfolios, setPortfolios] = useState([]);
     const [chosen_portfolio, setChosenPortfolio] = useState(null);
     const [sellAmount, setSellAmount] = useState(0.0);
@@ -32,7 +31,6 @@ export default function Portfolio() {
                 });
                 if (response.status === 200) {
                     setIsAuthenticated(true);
-                    setUser(response.data.username);
                 }
             } catch (error) {
                 setIsAuthenticated(false);

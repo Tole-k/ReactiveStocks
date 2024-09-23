@@ -7,7 +7,6 @@ import axios from '../axiosConfig';
 
 export default function Root() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [user, setUser] = useState(null);
     const accessToken = localStorage.getItem('access_token');
     useEffect(() => {
         const checkAuth = async () => {
@@ -22,7 +21,6 @@ export default function Root() {
                 if (response.status === 200) {
                     console.log(response.data)
                     setIsAuthenticated(true);
-                    setUser(response.data.username);
                 }
             }).catch((error) => {
                 console.log(error);

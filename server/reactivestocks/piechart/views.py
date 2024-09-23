@@ -52,7 +52,10 @@ class AddPortfolioAllocationView(APIView):
                 portfolio=portfolio, stock=symbol, allocation=allocation, user=request.user)
         else:
             current_allocation = sum(
-                [position.allocation for position in DummyPosition.objects.filter(portfolio=portfolio, user=request.user)])+float(allocation)-float(dummy_position.allocation)
+                [position.allocation for position in DummyPosition.objects.filter(
+                    portfolio=portfolio,
+                    user=request.user
+                )])+float(allocation)-float(dummy_position.allocation)
             if current_allocation > 1:
                 return Response({"error": "Allocation exceeds 100%"}, status=status.HTTP_400_BAD_REQUEST)
             dummy_position.allocation = allocation

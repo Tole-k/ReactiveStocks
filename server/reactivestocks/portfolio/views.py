@@ -8,11 +8,9 @@ from .serializer import PositionSerializer, DummyPositionSerializer
 from follow.serializer import StockSerializer
 import requests
 from follow.views import update
-from rest_framework import status
 from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-updater = False
+updater = True
 APIKEY = 'smwtbHsasmvEoGzGfDTq5Wo5xcqVHQvu'
 
 

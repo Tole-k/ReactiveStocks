@@ -1,8 +1,6 @@
-import React from "react";
 import { useEffect, useState } from "react";
-import { PieChart, Pie } from "recharts";
+import { PieChart, Pie, Cell } from "recharts";
 import Dropdown from 'react-bootstrap/Dropdown';
-import styled from "styled-components";
 import axios from '../axiosConfig';
 
 export default function PieCharts() {
@@ -12,7 +10,6 @@ export default function PieCharts() {
     const [suggestions, setSuggestions] = useState([]);
     const [enteredText, setEnteredText] = useState('');
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [user, setUser] = useState(null);
     const [portfolios, setPortfolios] = useState([]);
     const [chosen_portfolio, setChosenPortfolio] = useState(null);
     const [proportions, setProportions] = useState([]);
@@ -30,7 +27,6 @@ export default function PieCharts() {
                 });
                 if (response.status === 200) {
                     setIsAuthenticated(true);
-                    setUser(response.data.username);
                 }
             } catch (error) {
                 setIsAuthenticated(false);
@@ -246,6 +242,7 @@ export default function PieCharts() {
         });
         e.preventDefault();
     }
+    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
     return (
         <div className="whole-page">
             <Dropdown>
@@ -261,75 +258,85 @@ export default function PieCharts() {
                     ))}
                 </Dropdown.Menu>
             </Dropdown>
-            <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-                <div>
-                    <label>
-                        Current Portfolio
-                        <PieChart width={400} height={400}>
-                            <Pie
-                                data={prepare_portfolio_data()}
-                                dataKey="value"
-                                cx={200}
-                                cy={200}
-                                outerRadius={60}
-                                fill="#8884d8"
-                                label={({ name, value }) => `${name}: ${100 * value}%`}
-                            />
-                        </PieChart>
-                    </label>
+            {chosen_portfolio &&
+                <div style={{ display: 'flex', justifyContent: 'space-around' }}>
                     <div>
                         <label>
-                            Rebalancing Recommendations:
-                            <ul>
-                                {Recommendations.map((recommendation, index) => (
-                                    <li key={index}>{recommendation}</li>
-                                ))}
-                            </ul>
+                            Current Portfolio
+                            <PieChart width={400} height={400}>
+                                <Pie
+                                    data={prepare_portfolio_data()}
+                                    dataKey="value"
+                                    cx={200}
+                                    cy={200}
+                                    outerRadius={60}
+                                    fill="#8884d8"
+                                    label={({ name, value }) => `${name}: ${100 * value}%`}
+                                >
+                                    {prepare_portfolio_data().map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    ))}
+                                </Pie>
+                            </PieChart>
                         </label>
+                        <div>
+                            <label>
+                                Rebalancing Recommendations:
+                                <ul>
+                                    {Recommendations.map((recommendation, index) => (
+                                        <li key={index}>{recommendation}</li>
+                                    ))}
+                                </ul>
+                            </label>
+                        </div>
                     </div>
-                </div>
-                <div>
-                    <label>
-                        Target Portfolio
-                        <PieChart width={400} height={400}>
-                            <Pie
-                                data={prepare_allocation_data()}
-                                dataKey="value"
-                                cx={200}
-                                cy={200}
-                                outerRadius={60}
-                                fill="#8884d8"
-                                label={({ name, value }) => `${name}: ${Math.round(10000 * value) / 100}%`}
-                            />
-                        </PieChart>
-                    </label>
                     <div>
                         <label>
-                            Edit Portfolio
-                            <form className='portfolio-form'>
-                                <div>
-                                    <label>
-                                        Symbol:
-                                        <br></br>
-                                        <input type="text" placeholder="Stock Symbol..." value={enteredText} onChange={searchBarChange} />
-                                    </label>
-                                    <div className='dropdown' id='portfolio'>
-                                        {suggestions.length ? suggestions.map((suggestion, index) => (
-                                            <div key={index} className='dropdown-row' onClick={() => suggestionsClick(suggestion.symbol)}>{suggestion.symbol} ({suggestion.name})</div>
-                                        )) : null}
+                            Target Portfolio
+                            <PieChart width={400} height={400}>
+                                <Pie
+                                    data={prepare_allocation_data()}
+                                    dataKey="value"
+                                    cx={200}
+                                    cy={200}
+                                    outerRadius={60}
+                                    fill="#8884d8"
+                                    label={({ name, value }) => `${name}: ${Math.round(10000 * value) / 100}%`}
+                                >
+                                    {prepare_allocation_data().map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    ))}
+                                </Pie>
+                            </PieChart>
+                        </label>
+                        <div>
+                            <label>
+                                Edit Portfolio
+                                <form className='portfolio-form'>
+                                    <div>
+                                        <label>
+                                            Symbol:
+                                            <br></br>
+                                            <input type="text" placeholder="Stock Symbol..." value={enteredText} onChange={searchBarChange} />
+                                        </label>
+                                        <div className='dropdown' id='portfolio'>
+                                            {suggestions.length ? suggestions.map((suggestion, index) => (
+                                                <div key={index} className='dropdown-row' onClick={() => suggestionsClick(suggestion.symbol)}>{suggestion.symbol} ({suggestion.name})</div>
+                                            )) : null}
+                                        </div>
                                     </div>
-                                </div>
-                                <label>
-                                    Allocation:
-                                    <br></br>
-                                    <input type="number" placeholder="0" value={allocation} onChange={(e) => setAllocation(e.target.value)} min={0.0} max={1.0} step={0.1} />
-                                </label>
-                                <button className='buy' onClick={add_allocation}>Set</button>
-                            </form>
-                        </label>
+                                    <label>
+                                        Allocation:
+                                        <br></br>
+                                        <input type="number" placeholder="0" value={allocation} onChange={(e) => setAllocation(e.target.value)} min={0.0} max={1.0} step={0.1} />
+                                    </label>
+                                    <button className='buy' onClick={add_allocation}>Set</button>
+                                </form>
+                            </label>
+                        </div>
                     </div>
                 </div>
-            </div>
+            }
         </div>
     );
 }

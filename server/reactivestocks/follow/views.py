@@ -1,15 +1,11 @@
-from pickle import TRUE
-from turtle import st
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Stock
 from .serializer import StockSerializer
 import requests
-from rest_framework import status
 from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-updater = False
+updater = True
 
 APIKEY = 'smwtbHsasmvEoGzGfDTq5Wo5xcqVHQvu'
 

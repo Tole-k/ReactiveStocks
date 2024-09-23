@@ -7,8 +7,6 @@ export default function FollowedStocks() {
     const [symbol, setSymbol] = useState("");
     const [suggestions, setSuggestions] = useState([]);
     const [enteredText, setEnteredText] = useState('');
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [user, setUser] = useState(null);
     const accessToken = localStorage.getItem('access_token');
     const enable_suggestions = true;
 
@@ -41,13 +39,10 @@ export default function FollowedStocks() {
                 console.log(response);
                 if (response.status === 200) {
                     console.log(response.data)
-                    setIsAuthenticated(true);
-                    setUser(response.data.username);
                 }
             }).catch((error) => {
                 console.log(error);
                 console.log("Not authenticated, redirecting to login");
-                setIsAuthenticated(false);
                 window.location.href = '/user_auth/login';
             });
         };
