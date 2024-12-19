@@ -247,7 +247,13 @@ export default function Portfolio() {
             amount: position.quantity * position.stock.price,
             date: new Date()
         });
-        return xirr(cashFlows);
+        try {
+            const xir = xirr(cashFlows);
+            return xir;
+        }
+        catch (error) {
+            return NaN;
+        }
     };
     const calculatePortfolioXirr = (positions) => {
         const cashFlows = []
@@ -263,7 +269,13 @@ export default function Portfolio() {
                 date: new Date()
             });
         });
-        return xirr(cashFlows);
+        try {
+            const xir = xirr(cashFlows);
+            return xir;
+        }
+        catch (error) {
+            return NaN;
+        }
     };
 
     return (
