@@ -4,6 +4,139 @@ import styled from "styled-components";
 import axios from '../axiosConfig';
 import xirr from '@webcarrot/xirr';
 
+
+export function PortfolioSelector({ chosen_portfolio, portfolios, create_new_portfolio, choose_portfolio }) {
+    return (
+        <Dropdown>
+            <Dropdown.Toggle variant="success" id="dropdown-basic">
+                {chosen_portfolio ? chosen_portfolio.name : "Select Portfolio"}
+            </Dropdown.Toggle>
+
+            <Dropdown.Menu>
+                {portfolios.map((portfolio, index) => (
+                    <Dropdown.Item key={index} onClick={() => choose_portfolio(portfolio)}>
+                        {portfolio.name}
+                    </Dropdown.Item>
+                ))}
+                <Dropdown.Item onClick={create_new_portfolio}>Create New Portfolio</Dropdown.Item>
+            </Dropdown.Menu>
+        </Dropdown>
+    )
+}
+export function XirrSummary({ calculatePortfolioXirr, positions, Change }) {
+    return (
+        <div>
+            <label>
+                Portfolio XIRR:
+                <Change data={calculatePortfolioXirr(positions)}>
+                    {Math.round(calculatePortfolioXirr(positions) * 10000) / 100}%
+                </Change>
+            </label>
+        </div>
+    )
+}
+
+export function PositionForm({ suggestions, enteredText, suggestionsClick, quantity, price, date, openPosition, setDate, setPrice, searchBarChange, setQuantity }) {
+    return (
+        <div className='portfolio-container'>
+            <form className='portfolio-form'>
+                <div>
+                    <label>
+                        Symbol:
+                        <br></br>
+                        <input type="text" placeholder="Stock Symbol..." value={enteredText} onChange={searchBarChange} />
+                    </label>
+                    <div className='dropdown' id='portfolio'>
+                        {suggestions.length ? suggestions.map((suggestion, index) => (
+                            <div key={index} className='dropdown-row' onClick={() => suggestionsClick(suggestion.symbol)}>{suggestion.symbol} ({suggestion.name})</div>
+                        )) : null}
+                    </div>
+                </div>
+                <label>
+                    Quantity:
+                    <br></br>
+                    <input type="number" placeholder="0" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+                </label>
+                <label>
+                    Price:
+                    <br></br>
+                    <input type="number" placeholder='0' value={price} onChange={(e) => setPrice(e.target.value)} />
+                </label>
+                <label>
+                    Date:
+                    <br></br>
+                    <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+                </label>
+                <button className='buy' onClick={openPosition}>Open</button>
+            </form>
+        </div>
+    )
+}
+
+export function PositionTable(chosen_portfolio, positions, Change, calculatePositionXirr, setSellAmount, setSellPrice, closePosition) {
+    return (
+        <div className='tableWrap'>
+            <table className='stock-table'>
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Volume</th>
+                        <th>Purchase Value</th>
+                        <th>Market Value</th>
+                        <th>Avg Open Price</th>
+                        <th>Market Price</th>
+                        <th>Net Profit/Loss</th>
+                        <th>Net P/L %</th>
+                        <th>XIRR</th>
+                        <th>Sell</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {chosen_portfolio != null && Array.isArray(positions) && positions.map((position, index) => (
+                        <tr key={index} className='stock-item'>
+                            <td>{position.stock.symbol}</td>
+                            <td>{position.quantity}</td>
+                            <td>{Math.round(position.average_price * position.quantity * 100) / 100}</td>
+                            <td>{Math.round(position.stock.price * position.quantity * 100) / 100}</td>
+                            <td>{Math.round(position.average_price * 100) / 100}</td>
+                            <td>{position.stock.price}</td>
+                            <td>
+                                <Change data={(position.stock.price - position.average_price) * position.quantity}>
+                                    {Math.round((position.stock.price - position.average_price) * position.quantity * 100) / 100}
+                                </Change>
+                            </td>
+                            <td>
+                                <Change data={((position.stock.price - position.average_price) * position.quantity) / (position.average_price * position.quantity)}>
+                                    {Math.round(((position.stock.price - position.average_price) * position.quantity) / (position.average_price * position.quantity) * 10000) / 100}%
+                                </Change>
+                            </td>
+                            <td>
+                                <Change data={calculatePositionXirr(position)}>
+                                    {Math.round(calculatePositionXirr(position) * 10000) / 100}%
+                                </Change>
+                            </td>
+                            <td>
+                                <div className="sell-inputs">
+                                    <label>
+                                        Price:
+                                        <input type='number' placeholder='0' onChange={(e) => setSellPrice(e.target.value)} />
+                                    </label>
+                                    <label>
+                                        Quantity:
+                                        <input type='number' placeholder='0' onChange={(e) => setSellAmount(e.target.value)} />
+                                    </label>
+                                    <button className='sell' onClick={() => closePosition(position.id)}>Sell</button>
+                                </div>
+
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    )
+}
+
 export default function Portfolio() {
     const [positions, setPositions] = useState([]);
     const [symbol, setSymbol] = useState("");
@@ -171,7 +304,6 @@ export default function Portfolio() {
         setSellPrice(0.0);
     }
 
-    // eslint-disable-next-line react/prop-types
     const Change = styled.p`color: ${(props) => props.data === 0 ? "white" : props.data > 0 ? "green" : "red"};
         margin: 0;
         display: flex;
@@ -280,124 +412,15 @@ export default function Portfolio() {
 
     return (
         <div className='whole-page'>
-            <Dropdown>
-                <Dropdown.Toggle variant="success" id="dropdown-basic">
-                    {chosen_portfolio ? chosen_portfolio.name : "Select Portfolio"}
-                </Dropdown.Toggle>
-
-                <Dropdown.Menu>
-                    {portfolios.map((portfolio, index) => (
-                        <Dropdown.Item key={index} onClick={() => choose_portfolio(portfolio)}>
-                            {portfolio.name}
-                        </Dropdown.Item>
-                    ))}
-                    <Dropdown.Item onClick={create_new_portfolio}>Create New Portfolio</Dropdown.Item>
-                </Dropdown.Menu>
-            </Dropdown>
+            <PortfolioSelector />
             {portfolios.length > 0 &&
                 <div>
-                    <div className='portfolio-container'>
-                        <form className='portfolio-form'>
-                            <div>
-                                <label>
-                                    Symbol:
-                                    <br></br>
-                                    <input type="text" placeholder="Stock Symbol..." value={enteredText} onChange={searchBarChange} />
-                                </label>
-                                <div className='dropdown' id='portfolio'>
-                                    {suggestions.length ? suggestions.map((suggestion, index) => (
-                                        <div key={index} className='dropdown-row' onClick={() => suggestionsClick(suggestion.symbol)}>{suggestion.symbol} ({suggestion.name})</div>
-                                    )) : null}
-                                </div>
-                            </div>
-                            <label>
-                                Quantity:
-                                <br></br>
-                                <input type="number" placeholder="0" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
-                            </label>
-                            <label>
-                                Price:
-                                <br></br>
-                                <input type="number" placeholder='0' value={price} onChange={(e) => setPrice(e.target.value)} />
-                            </label>
-                            <label>
-                                Date:
-                                <br></br>
-                                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-                            </label>
-                            <button className='buy' onClick={openPosition}>Open</button>
-                        </form>
-                    </div>
+                    <PositionForm />
                     {positions.length > 0 &&
-                        <div className='tableWrap'>
-                            <table className='stock-table'>
-                                <thead>
-                                    <tr>
-                                        <th>Symbol</th>
-                                        <th>Volume</th>
-                                        <th>Purchase Value</th>
-                                        <th>Market Value</th>
-                                        <th>Avg Open Price</th>
-                                        <th>Market Price</th>
-                                        <th>Net Profit/Loss</th>
-                                        <th>Net P/L %</th>
-                                        <th>XIRR</th>
-                                        <th>Sell</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {chosen_portfolio != null && Array.isArray(positions) && positions.map((position, index) => (
-                                        <tr key={index} className='stock-item'>
-                                            <td>{position.stock.symbol}</td>
-                                            <td>{position.quantity}</td>
-                                            <td>{Math.round(position.average_price * position.quantity * 100) / 100}</td>
-                                            <td>{Math.round(position.stock.price * position.quantity * 100) / 100}</td>
-                                            <td>{Math.round(position.average_price * 100) / 100}</td>
-                                            <td>{position.stock.price}</td>
-                                            <td>
-                                                <Change data={(position.stock.price - position.average_price) * position.quantity}>
-                                                    {Math.round((position.stock.price - position.average_price) * position.quantity * 100) / 100}
-                                                </Change>
-                                            </td>
-                                            <td>
-                                                <Change data={((position.stock.price - position.average_price) * position.quantity) / (position.average_price * position.quantity)}>
-                                                    {Math.round(((position.stock.price - position.average_price) * position.quantity) / (position.average_price * position.quantity) * 10000) / 100}%
-                                                </Change>
-                                            </td>
-                                            <td>
-                                                <Change data={calculatePositionXirr(position)}>
-                                                    {Math.round(calculatePositionXirr(position) * 10000) / 100}%
-                                                </Change>
-                                            </td>
-                                            <td>
-                                                <div className="sell-inputs">
-                                                    <label>
-                                                        Price:
-                                                        <input type='number' placeholder='0' onChange={(e) => setSellPrice(e.target.value)} />
-                                                    </label>
-                                                    <label>
-                                                        Quantity:
-                                                        <input type='number' placeholder='0' onChange={(e) => setSellAmount(e.target.value)} />
-                                                    </label>
-                                                    <button className='sell' onClick={() => closePosition(position.id)}>Sell</button>
-                                                </div>
-
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                        <PositionTable />
                     }
                     {positions.length > 0 &&
-                        <div>
-                            <label>
-                                Portfolio XIRR:
-                                <Change data={calculatePortfolioXirr(positions)}>
-                                    {Math.round(calculatePortfolioXirr(positions) * 10000) / 100}%
-                                </Change>
-                            </label>
-                        </div>
+                        <XirrSummary />
                     }
                 </div>
             }

@@ -3,9 +3,9 @@ import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import { useState, useEffect } from 'react';
-import axios from '../axiosConfig';
+import axios from './axiosConfig';
 
-export default function Root() {
+export default function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const accessToken = localStorage.getItem('access_token');
     useEffect(() => {
