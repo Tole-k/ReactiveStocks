@@ -13,7 +13,9 @@ export default function PortfolioSelector({ chosen_portfolio, portfolios, create
                         {portfolio.name}
                     </Dropdown.Item>
                 ))}
-                <Dropdown.Item onClick={create_new_portfolio}>Create New Portfolio</Dropdown.Item>
+                {create_new_portfolio &&
+                    <Dropdown.Item onClick={create_new_portfolio}>Create New Portfolio</Dropdown.Item>
+                }
             </Dropdown.Menu>
         </Dropdown>
     )

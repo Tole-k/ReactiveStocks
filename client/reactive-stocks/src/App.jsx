@@ -30,6 +30,25 @@ export default function App() {
         };
         checkAuth();
     }, [isAuthenticated, accessToken]);
+
+    async function fetchSuggestions(symbol, setSuggestions) {
+        if (symbol !== "") {
+            try {
+                const response = await axios.get(`http://127.0.0.1:8000/follow/suggestions/${symbol}/`, {
+                    method: "GET",
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+                setSuggestions(response.data);
+            } catch (error) {
+                console.log(error);
+            }
+        }
+    }
+
+
     return (
         <>
             <Navbar expand="lg" className="bg-body-tertiary" sticky="top">

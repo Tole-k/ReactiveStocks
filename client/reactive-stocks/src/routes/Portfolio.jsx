@@ -19,6 +19,7 @@ export default function Portfolio() {
     const [chosen_portfolio, setChosenPortfolio] = useState(null);
     const [sellAmount, setSellAmount] = useState(0.0);
     const [sellPrice, setSellPrice] = useState(0.0);
+
     const accessToken = localStorage.getItem('access_token');
     const enable_suggestions = true;
 
@@ -34,7 +35,7 @@ export default function Portfolio() {
                 if (response.status === 200) {
                     setIsAuthenticated(true);
                 }
-            } catch (error) {
+            } catch {
                 setIsAuthenticated(false);
                 window.location.href = '/user_auth/login';
             }
@@ -252,7 +253,7 @@ export default function Portfolio() {
             const xir = xirr(cashFlows);
             return xir;
         }
-        catch (error) {
+        catch {
             return NaN;
         }
     };
@@ -274,7 +275,7 @@ export default function Portfolio() {
             const xir = xirr(cashFlows);
             return xir;
         }
-        catch (error) {
+        catch {
             return NaN;
         }
     };
