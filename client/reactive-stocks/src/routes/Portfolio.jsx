@@ -73,7 +73,7 @@ export function PositionForm({ suggestions, enteredText, suggestionsClick, quant
     )
 }
 
-export function PositionTable(chosen_portfolio, positions, Change, calculatePositionXirr, setSellAmount, setSellPrice, closePosition) {
+export function PositionTable({ chosen_portfolio, positions, Change, calculatePositionXirr, setSellAmount, setSellPrice, closePosition }) {
     return (
         <div className='tableWrap'>
             <table className='stock-table'>
@@ -308,8 +308,8 @@ export default function Portfolio() {
         margin: 0;
         display: flex;
         justify-content: center;
-        align-items: center; /* Center vertically */
-        height: 100%; /* Ensure it takes the full height of the cell */`;
+        align-items: center; 
+        height: 100%;`;
 
     const fetchSuggestions = async (symbol) => {
         if (symbol !== "") {
@@ -412,15 +412,15 @@ export default function Portfolio() {
 
     return (
         <div className='whole-page'>
-            <PortfolioSelector />
+            <PortfolioSelector chosen_portfolio={chosen_portfolio} portfolios={portfolios} create_new_portfolio={create_new_portfolio} choose_portfolio={choose_portfolio} />
             {portfolios.length > 0 &&
                 <div>
-                    <PositionForm />
+                    <PositionForm suggestions={suggestions} enteredText={enteredText} suggestionsClick={suggestionsClick} quantity={quantity} price={price} date={date} openPosition={openPosition} setDate={setDate} setPrice={setPrice} searchBarChange={searchBarChange} setQuantity={setQuantity} />
                     {positions.length > 0 &&
-                        <PositionTable />
+                        <PositionTable chosen_portfolio={chosen_portfolio} positions={positions} Change={Change} calculatePositionXirr={calculatePositionXirr} setSellAmount={setSellAmount} setSellPrice={setSellPrice} closePosition={closePosition} />
                     }
                     {positions.length > 0 &&
-                        <XirrSummary />
+                        <XirrSummary calculatePortfolioXirr={calculatePortfolioXirr} positions={positions} Change={Change} />
                     }
                 </div>
             }

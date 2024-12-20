@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from '../axiosConfig';
-import { SearchBar } from '../components/SearchBar';
-import { StockTable } from '../components/StockTable';
+import SearchBar from '../components/SearchBar';
+import StockTable from '../components/StockTable';
 
 export default function FollowedStocks() {
     const [suggestions, setSuggestions] = useState([]);
