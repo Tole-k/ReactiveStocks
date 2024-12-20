@@ -4,7 +4,6 @@ import styled from "styled-components";
 import axios from '../axiosConfig';
 import xirr from '@webcarrot/xirr';
 
-
 export function PortfolioSelector({ chosen_portfolio, portfolios, create_new_portfolio, choose_portfolio }) {
     return (
         <Dropdown>
