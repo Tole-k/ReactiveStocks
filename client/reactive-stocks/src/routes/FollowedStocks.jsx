@@ -5,6 +5,7 @@ import SearchBar from '../components/SearchBar';
 import StockTable from '../components/StockTable';
 import { fetchSuggestions } from '../utils/dataFetchers'; // Import the fetchSuggestions function
 import { checkAuth } from '../utils/auth'; // Import the checkAuth function
+import { Container, Alert, Spinner } from 'react-bootstrap';
 
 export default function FollowedStocks() {
     const [suggestions, setSuggestions] = useState([]);
@@ -101,13 +102,13 @@ export default function FollowedStocks() {
     }
 
     return (
-        <div className='whole-page'>
-            {errorMessage && <div className="error-message">{errorMessage}</div>}
-            {loading && <div className="loading-message">Loading...</div>}
+        <Container className='whole-page'>
+            {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
+            {loading && <Spinner animation="border" role="status"><span className="visually-hidden">Loading...</span></Spinner>}
             <SearchBar addStock={addStock} suggestions={suggestions} enteredText={enteredText} searchBarChange={searchBarChange} suggestionsClick={suggestionsClick} />
             {stocks.length > 0 &&
                 <StockTable stocks={stocks} removeStock={removeStock} />
             }
-        </div>
+        </Container>
     );
 }

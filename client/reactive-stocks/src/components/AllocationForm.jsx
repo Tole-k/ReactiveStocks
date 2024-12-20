@@ -1,29 +1,29 @@
-
+import { Form, Button, InputGroup, Dropdown } from 'react-bootstrap';
 
 export function AllocationForm({ enteredText, searchBarChange, suggestionsClick, setAllocation, allocation, add_allocation, suggestions }) {
     return (
-        <label>
+        <Form.Label>
             Edit Portfolio
-            <form className='portfolio-form'>
+            <Form className='portfolio-form'>
                 <div>
-                    <label>
-                        Symbol:
-                        <br></br>
-                        <input type="text" placeholder="Stock Symbol..." value={enteredText} onChange={searchBarChange} />
-                    </label>
-                    <div className='dropdown' id='portfolio'>
-                        {suggestions.length ? suggestions.map((suggestion, index) => (
-                            <div key={index} className='dropdown-row' onClick={() => suggestionsClick(suggestion.symbol)}>{suggestion.symbol} ({suggestion.name})</div>
-                        )) : null}
-                    </div>
+                    <Form.Group>
+                        <Form.Label>Symbol:</Form.Label>
+                        <Form.Control type="text" placeholder="Stock Symbol..." value={enteredText} onChange={searchBarChange} />
+                        <Dropdown className='dropdown' id='portfolio'>
+                            {suggestions.length ? suggestions.map((suggestion, index) => (
+                                <Dropdown.Item key={index} onClick={() => suggestionsClick(suggestion.symbol)}>
+                                    {suggestion.symbol} ({suggestion.name})
+                                </Dropdown.Item>
+                            )) : null}
+                        </Dropdown>
+                    </Form.Group>
                 </div>
-                <label>
-                    Allocation:
-                    <br></br>
-                    <input type="number" placeholder="0" value={allocation} onChange={(e) => setAllocation(e.target.value)} min={0.0} max={1.0} step={0.1} />
-                </label>
-                <button className='buy' onClick={add_allocation}>Set</button>
-            </form>
-        </label>
+                <Form.Group>
+                    <Form.Label>Allocation:</Form.Label>
+                    <Form.Control type="number" placeholder="0" value={allocation} onChange={(e) => setAllocation(e.target.value)} min={0.0} max={1.0} step={0.1} />
+                </Form.Group>
+                <Button variant="success" onClick={add_allocation}>Set</Button>
+            </Form>
+        </Form.Label>
     );
 }

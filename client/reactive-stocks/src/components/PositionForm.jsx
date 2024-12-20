@@ -1,36 +1,36 @@
+import { Form, Button, InputGroup, Dropdown } from 'react-bootstrap';
+
 export default function PositionForm({ suggestions, enteredText, suggestionsClick, quantity, price, date, openPosition, setDate, setPrice, searchBarChange, setQuantity }) {
     return (
         <div className='portfolio-container'>
-            <form className='portfolio-form'>
+            <Form className='portfolio-form'>
                 <div>
-                    <label>
-                        Symbol:
-                        <br></br>
-                        <input type="text" placeholder="Stock Symbol..." value={enteredText} onChange={searchBarChange} />
-                    </label>
-                    <div className='dropdown' id='portfolio'>
-                        {suggestions.length ? suggestions.map((suggestion, index) => (
-                            <div key={index} className='dropdown-row' onClick={() => suggestionsClick(suggestion.symbol)}>{suggestion.symbol} ({suggestion.name})</div>
-                        )) : null}
-                    </div>
+                    <Form.Group>
+                        <Form.Label>Symbol:</Form.Label>
+                        <Form.Control type="text" placeholder="Stock Symbol..." value={enteredText} onChange={searchBarChange} />
+                        <Dropdown className='dropdown' id='portfolio'>
+                            {suggestions.length ? suggestions.map((suggestion, index) => (
+                                <Dropdown.Item key={index} onClick={() => suggestionsClick(suggestion.symbol)}>
+                                    {suggestion.symbol} ({suggestion.name})
+                                </Dropdown.Item>
+                            )) : null}
+                        </Dropdown>
+                    </Form.Group>
                 </div>
-                <label>
-                    Quantity:
-                    <br></br>
-                    <input type="number" placeholder="0" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
-                </label>
-                <label>
-                    Price:
-                    <br></br>
-                    <input type="number" placeholder='0' value={price} onChange={(e) => setPrice(e.target.value)} />
-                </label>
-                <label>
-                    Date:
-                    <br></br>
-                    <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-                </label>
-                <button className='buy' onClick={openPosition}>Open</button>
-            </form>
+                <Form.Group>
+                    <Form.Label>Quantity:</Form.Label>
+                    <Form.Control type="number" placeholder="0" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+                </Form.Group>
+                <Form.Group>
+                    <Form.Label>Price:</Form.Label>
+                    <Form.Control type="number" placeholder='0' value={price} onChange={(e) => setPrice(e.target.value)} />
+                </Form.Group>
+                <Form.Group>
+                    <Form.Label>Date:</Form.Label>
+                    <Form.Control type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+                </Form.Group>
+                <Button variant="success" onClick={openPosition}>Open</Button>
+            </Form>
         </div>
     );
 }
