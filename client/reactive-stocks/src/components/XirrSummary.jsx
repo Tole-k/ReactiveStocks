@@ -1,4 +1,6 @@
-export default function XirrSummary({ calculatePortfolioXirr, positions, Change }) {
+import Change from "../utils/Change";
+
+export default function XirrSummary({ calculatePortfolioXirr, positions }) {
     return (
         <div>
             <label>

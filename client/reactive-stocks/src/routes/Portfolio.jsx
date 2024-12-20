@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
-import styled from "styled-components";
+import { useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import xirr from '@webcarrot/xirr';
 import XirrSummary from '../components/XirrSummary';
 import PositionForm from '../components/PositionForm';
 import PositionTable from '../components/PositionTable';
 import PortfolioSelector from '../components/PortfolioSelector';
-export default function Portfolio() {
+import { checkAuth } from '../utils/auth'; // Import the checkAuth function
+import { fetchPortfolios, fetchPositions, fetchSuggestions } from '../utils/dataFetchers'; // Import the data fetchers
+
+function Portfolio() {
     const [positions, setPositions] = useState([]);
     const [symbol, setSymbol] = useState("");
     const [quantity, setQuantity] = useState(0.0);
@@ -19,77 +22,45 @@ export default function Portfolio() {
     const [chosen_portfolio, setChosenPortfolio] = useState(null);
     const [sellAmount, setSellAmount] = useState(0.0);
     const [sellPrice, setSellPrice] = useState(0.0);
+    const [errorMessage, setErrorMessage] = useState("");
+    const [loading, setLoading] = useState(false);
 
     const accessToken = localStorage.getItem('access_token');
     const enable_suggestions = true;
+    const navigate = useNavigate();
 
     useEffect(() => {
-        const checkAuth = async () => {
-            try {
-                const response = await axios.get("http://127.0.0.1:8000/user_auth/whoami/", {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${accessToken}`
-                    }
-                });
-                if (response.status === 200) {
-                    setIsAuthenticated(true);
-                }
-            } catch {
-                setIsAuthenticated(false);
-                window.location.href = '/user_auth/login';
-            }
-        };
+        async function authenticate() {
+            const isAuthenticated = await checkAuth(accessToken, navigate);
+            setIsAuthenticated(isAuthenticated);
+        }
 
-        checkAuth();
-    }, [accessToken]);
+        authenticate();
+    }, [accessToken, navigate]);
 
     useEffect(() => {
-        const fetchPortfolios = async () => {
-            try {
-                const response = await axios.get("http://127.0.0.1:8000/piechart/", {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${accessToken}`
-                    }
-                });
-                if (response.status === 204) {
-                    console.log("No portfolios found");
-                } else {
-                    setPortfolios(response.data);
-                }
-            } catch (error) {
-                console.log(error);
-            }
-        };
+        async function loadPortfolios() {
+            setLoading(true);
+            const portfoliosData = await fetchPortfolios(accessToken);
+            setPortfolios(portfoliosData);
+            setLoading(false);
+        }
 
         if (isAuthenticated) {
-            fetchPortfolios();
+            loadPortfolios();
         }
-        console.log(positions);
-    }, [accessToken, isAuthenticated, positions]);
+    }, [accessToken, isAuthenticated]);
 
     useEffect(() => {
-        const fetchPositions = async () => {
-            if (chosen_portfolio) {
-                try {
-                    const response = await axios.get(`http://127.0.0.1:8000/portfolio/${chosen_portfolio.id}/`, {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${accessToken}`
-                        }
-                    });
-                    if (response.status === 200) {
-                        setPositions(response.data);
-                    }
-                } catch (error) {
-                    console.log(error);
-                }
-            }
-        };
+        async function loadPositions() {
+            setLoading(true);
+            const positionsData = await fetchPositions(accessToken, chosen_portfolio);
+            setPositions(positionsData);
+            setLoading(false);
+        }
 
         if (chosen_portfolio) {
-            fetchPositions();
+            loadPositions();
         }
     }, [accessToken, chosen_portfolio]);
 
@@ -100,7 +71,7 @@ export default function Portfolio() {
         }
     }, []);
 
-    const openPosition = async (e) => {
+    async function openPosition(e) {
         const positionData = {
             symbol,
             quantity,
@@ -136,11 +107,12 @@ export default function Portfolio() {
             setDate("");
         }).catch((error) => {
             console.log(error);
+            setErrorMessage("Failed to open position. Please try again.");
         });
         e.preventDefault();
-    };
+    }
 
-    const closePosition = async (id) => {
+    async function closePosition(id) {
         const sellData = {
             average_price: sellPrice,
             quantity: sellAmount
@@ -169,56 +141,34 @@ export default function Portfolio() {
             }
         }).catch((error) => {
             console.log(error);
+            setErrorMessage("Failed to close position. Please try again.");
         });
         setSellAmount(0.0);
         setSellPrice(0.0);
     }
 
-    const Change = styled.p`color: ${(props) => props.data === 0 ? "white" : props.data > 0 ? "green" : "red"};
-        margin: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center; 
-        height: 100%;`;
-
-    const fetchSuggestions = async (symbol) => {
-        if (symbol !== "") {
-            try {
-                const response = await axios.get(`http://127.0.0.1:8000/follow/suggestions/${symbol}/`, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${accessToken}`
-                    }
-                });
-                setSuggestions(response.data);
-            } catch (error) {
-                console.log(error);
-            }
-        }
-    }
-
-    const searchBarChange = (event) => {
+    function searchBarChange(event) {
         setEnteredText(event.target.value);
         setSymbol(event.target.value);
         if (enable_suggestions)
-            fetchSuggestions(event.target.value);
+            fetchSuggestions(event.target.value, accessToken, setSuggestions);
         if (!event.target.value) {
             setSuggestions([]);
         }
     }
 
-    const suggestionsClick = (symbol) => {
+    function suggestionsClick(symbol) {
         setSymbol(symbol);
         setEnteredText(symbol);
         setSuggestions([]);
     }
 
-    const choose_portfolio = (portfolio) => {
+    function choose_portfolio(portfolio) {
         localStorage.setItem('chosen_portfolio', JSON.stringify(portfolio));
         setChosenPortfolio(portfolio);
     }
 
-    const create_new_portfolio = async () => {
+    async function create_new_portfolio() {
         const portfolioName = prompt("Enter the name of the new portfolio:");
         if (portfolioName) {
             try {
@@ -236,8 +186,9 @@ export default function Portfolio() {
                 console.log(error);
             }
         }
-    };
-    const calculatePositionXirr = (position) => {
+    }
+
+    function calculatePositionXirr(position) {
         const cashFlows = []
         position.transactions.forEach((transaction) => {
             cashFlows.push({
@@ -256,8 +207,9 @@ export default function Portfolio() {
         catch {
             return NaN;
         }
-    };
-    const calculatePortfolioXirr = (positions) => {
+    }
+
+    function calculatePortfolioXirr(positions) {
         const cashFlows = []
         positions.forEach((position) => {
             position.transactions.forEach((transaction) => {
@@ -278,22 +230,26 @@ export default function Portfolio() {
         catch {
             return NaN;
         }
-    };
+    }
 
     return (
         <div className='whole-page'>
+            {errorMessage && <div className="error-message">{errorMessage}</div>}
+            {loading && <div className="loading-message">Loading...</div>}
             <PortfolioSelector chosen_portfolio={chosen_portfolio} portfolios={portfolios} create_new_portfolio={create_new_portfolio} choose_portfolio={choose_portfolio} />
             {portfolios.length > 0 &&
                 <div>
                     <PositionForm suggestions={suggestions} enteredText={enteredText} suggestionsClick={suggestionsClick} quantity={quantity} price={price} date={date} openPosition={openPosition} setDate={setDate} setPrice={setPrice} searchBarChange={searchBarChange} setQuantity={setQuantity} />
                     {positions.length > 0 &&
-                        <PositionTable chosen_portfolio={chosen_portfolio} positions={positions} Change={Change} calculatePositionXirr={calculatePositionXirr} setSellAmount={setSellAmount} setSellPrice={setSellPrice} closePosition={closePosition} />
+                        <PositionTable chosen_portfolio={chosen_portfolio} positions={positions} calculatePositionXirr={calculatePositionXirr} setSellAmount={setSellAmount} setSellPrice={setSellPrice} closePosition={closePosition} />
                     }
                     {positions.length > 0 &&
-                        <XirrSummary calculatePortfolioXirr={calculatePortfolioXirr} positions={positions} Change={Change} />
+                        <XirrSummary calculatePortfolioXirr={calculatePortfolioXirr} positions={positions} />
                     }
                 </div>
             }
         </div>
     )
 }
+
+export default Portfolio;

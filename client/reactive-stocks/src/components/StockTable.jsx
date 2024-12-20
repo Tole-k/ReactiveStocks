@@ -1,13 +1,7 @@
-import styled from "styled-components";
+import Change from "../utils/Change"
 
 export default function StockTable({ stocks, removeStock }) {
 
-    const Change = styled.p`color: ${(props) => props.data === 0 ? "white" : props.data > 0 ? "green" : "red"};
-        margin: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center; /* Center vertically */
-        height: 100%; /* Ensure it takes the full height of the cell */`;
 
     return (<div className='tableWrap'>
         <table className='stock-table'>

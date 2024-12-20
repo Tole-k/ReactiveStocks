@@ -5,8 +5,12 @@ export default function Login() {
     const [password, setPassword] = useState('');
     const [email, setEmail] = useState('');
     const [repeatPassword, setRepeatPassword] = useState('');
-    const login = async e => {
+    const [errorMessage, setErrorMessage] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    async function login(e) {
         e.preventDefault();
+        setLoading(true);
         const user = {
             username,
             password
@@ -27,11 +31,16 @@ export default function Login() {
                 `Bearer ${access}`;
             window.location.href = '/follow'
         } catch (e) {
-            console.log('login not working', e)
+            console.log('login not working', e);
+            setErrorMessage("Login failed. Please check your credentials and try again.");
+        } finally {
+            setLoading(false);
         }
     }
-    const register = async e => {
+
+    async function register(e) {
         e.preventDefault();
+        setLoading(true);
         const user = {
             username,
             email,
@@ -54,86 +63,94 @@ export default function Login() {
                 console.log(response['message']);
             }
         } catch (e) {
-            console.log('Register not working', e)
+            console.log('Register not working', e);
+            setErrorMessage("Registration failed. Please check your details and try again.");
+        } finally {
+            setLoading(false);
         }
     }
+
     return (
-        <div className="Auth-form-container">
-            <form className="Auth-form" onSubmit={login}>
-                <div className="Auth-form-content">
-                    <h3 className="Auth-form-title">Sign In</h3>
-                    <div className="form-group mt-3">
-                        <label>Username</label>
-                        <input className="form-control mt-1"
-                            placeholder="Enter Username"
-                            name='username'
-                            type='text' value={username}
-                            required
-                            onChange={e => setUsername(e.target.value)} />
+        <>
+            {errorMessage && <div className="error-message">{errorMessage}</div>}
+            {loading && <div className="loading-message">Loading...</div>}
+            <div className="Auth-form-container">
+                <form className="Auth-form" onSubmit={login}>
+                    <div className="Auth-form-content">
+                        <h3 className="Auth-form-title">Sign In</h3>
+                        <div className="form-group mt-3">
+                            <label>Username</label>
+                            <input className="form-control mt-1"
+                                placeholder="Enter Username"
+                                name='username'
+                                type='text' value={username}
+                                required
+                                onChange={e => setUsername(e.target.value)} />
+                        </div>
+                        <div className="form-group mt-3">
+                            <label>Password</label>
+                            <input name='password'
+                                type="password"
+                                className="form-control mt-1"
+                                placeholder="Enter password"
+                                value={password}
+                                required
+                                onChange={e => setPassword(e.target.value)} />
+                        </div>
+                        <div className="d-grid gap-2 mt-3">
+                            <button type="submit"
+                                className="btn btn-primary" onClick={login}>Submit</button>
+                        </div>
                     </div>
-                    <div className="form-group mt-3">
-                        <label>Password</label>
-                        <input name='password'
-                            type="password"
-                            className="form-control mt-1"
-                            placeholder="Enter password"
-                            value={password}
-                            required
-                            onChange={e => setPassword(e.target.value)} />
+                </form>
+                <form className="Auth-form" onSubmit={login}>
+                    <div className="Auth-form-content">
+                        <h3 className="Auth-form-title">Sign Up</h3>
+                        <div className="form-group mt-3">
+                            <label>Username</label>
+                            <input className="form-control mt-1"
+                                placeholder="Enter Username"
+                                name='username'
+                                type='text' value={username}
+                                required
+                                onChange={e => setUsername(e.target.value)} />
+                        </div>
+                        <div className="form-group mt-3">
+                            <label>Email</label>
+                            <input className="form-control mt-1"
+                                placeholder="Enter Email"
+                                name='email'
+                                type='text' value={email}
+                                required
+                                onChange={e => setEmail(e.target.value)} />
+                        </div>
+                        <div className="form-group mt-3">
+                            <label>Password</label>
+                            <input name='password'
+                                type="password"
+                                className="form-control mt-1"
+                                placeholder="Enter password"
+                                value={password}
+                                required
+                                onChange={e => setPassword(e.target.value)} />
+                        </div>
+                        <div className="form-group mt-3">
+                            <label>Confirm Password</label>
+                            <input name='confirm-password'
+                                type="password"
+                                className="form-control mt-1"
+                                placeholder="Confirm password"
+                                value={repeatPassword}
+                                required
+                                onChange={e => setRepeatPassword(e.target.value)} />
+                        </div>
+                        <div className="d-grid gap-2 mt-3">
+                            <button type="submit"
+                                className="btn btn-primary" onClick={register}>Submit</button>
+                        </div>
                     </div>
-                    <div className="d-grid gap-2 mt-3">
-                        <button type="submit"
-                            className="btn btn-primary" onClick={login}>Submit</button>
-                    </div>
-                </div>
-            </form>
-            <form className="Auth-form" onSubmit={login}>
-                <div className="Auth-form-content">
-                    <h3 className="Auth-form-title">Sign Up</h3>
-                    <div className="form-group mt-3">
-                        <label>Username</label>
-                        <input className="form-control mt-1"
-                            placeholder="Enter Username"
-                            name='username'
-                            type='text' value={username}
-                            required
-                            onChange={e => setUsername(e.target.value)} />
-                    </div>
-                    <div className="form-group mt-3">
-                        <label>Email</label>
-                        <input className="form-control mt-1"
-                            placeholder="Enter Email"
-                            name='email'
-                            type='text' value={email}
-                            required
-                            onChange={e => setEmail(e.target.value)} />
-                    </div>
-                    <div className="form-group mt-3">
-                        <label>Password</label>
-                        <input name='password'
-                            type="password"
-                            className="form-control mt-1"
-                            placeholder="Enter password"
-                            value={password}
-                            required
-                            onChange={e => setPassword(e.target.value)} />
-                    </div>
-                    <div className="form-group mt-3">
-                        <label>Confirm Password</label>
-                        <input name='confirm-password'
-                            type="password"
-                            className="form-control mt-1"
-                            placeholder="Confirm password"
-                            value={repeatPassword}
-                            required
-                            onChange={e => setRepeatPassword(e.target.value)} />
-                    </div>
-                    <div className="d-grid gap-2 mt-3">
-                        <button type="submit"
-                            className="btn btn-primary" onClick={register}>Submit</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    )
+                </form>
+            </div>
+        </>
+    );
 }

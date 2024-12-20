@@ -1,54 +1,43 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import SearchBar from '../components/SearchBar';
 import StockTable from '../components/StockTable';
+import { fetchSuggestions } from '../utils/dataFetchers'; // Import the fetchSuggestions function
+import { checkAuth } from '../utils/auth'; // Import the checkAuth function
 
 export default function FollowedStocks() {
     const [suggestions, setSuggestions] = useState([]);
     const [enteredText, setEnteredText] = useState('');
     const [stocks, setStocks] = useState([]);
     const [symbol, setSymbol] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
+    const [loading, setLoading] = useState(false);
 
     const accessToken = localStorage.getItem('access_token');
     const enable_suggestions = true;
+    const navigate = useNavigate();
 
-    const searchBarChange = (event) => {
+    function searchBarChange(event) {
         setEnteredText(event.target.value);
         setSymbol(event.target.value);
         if (enable_suggestions)
-            fetchSuggestions(event.target.value);
+            fetchSuggestions(event.target.value, accessToken, setSuggestions);
         if (!event.target.value) {
             setSuggestions([]);
         }
     }
 
-    const suggestionsClick = (symbol) => {
+    function suggestionsClick(symbol) {
         setSymbol(symbol);
         setEnteredText(symbol);
         setSuggestions([]);
     }
 
-
-    const fetchSuggestions = async (symbol) => {
-        if (symbol !== "") {
-            try {
-                const response = await axios.get(`http://127.0.0.1:8000/follow/suggestions/${symbol}/`, {
-                    method: "GET",
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${accessToken}`
-                    }
-                });
-                setSuggestions(response.data);
-            } catch (error) {
-                console.log(error);
-            }
-        }
-    }
-
     useEffect(() => {
-        const fetchStocks = async () => {
+        async function fetchStocks() {
             console.log("fetching stocks");
+            setLoading(true);
             try {
                 const response = await axios.get('http://localhost:8000/follow/', {
                     headers: {
@@ -62,31 +51,22 @@ export default function FollowedStocks() {
                 }
             } catch (error) {
                 console.log(error);
+            } finally {
+                setLoading(false);
             }
-        };
-        const checkAuth = async () => {
-            await axios.get("http://127.0.0.1:8000/user_auth/whoami/", {
-                method: "GET",
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`
-                }
-            }).then((response) => {
-                console.log(response);
-                if (response.status === 200) {
-                    console.log(response.data)
-                }
-            }).catch((error) => {
-                console.log(error);
-                console.log("Not authenticated, redirecting to login");
-                window.location.href = '/user_auth/login';
-            });
-        };
-        checkAuth();
-        fetchStocks();
-    }, [accessToken]);
+        }
 
-    const addStock = async () => {
+        async function authenticate() {
+            const isAuthenticated = await checkAuth(accessToken, navigate);
+            if (isAuthenticated) {
+                fetchStocks();
+            }
+        }
+
+        authenticate();
+    }, [accessToken, navigate]);
+
+    async function addStock() {
         await axios.post("http://127.0.0.1:8000/follow/add/", { symbol }, {
             headers: {
                 'Content-Type': 'application/json',
@@ -103,21 +83,27 @@ export default function FollowedStocks() {
             setSuggestions([]);
         }).catch((error) => {
             console.log(error);
+            setErrorMessage("Failed to add stock. Please try again.");
         });
-    };
+    }
 
-    const removeStock = async (id) => {
+    async function removeStock(id) {
         await axios.delete(`http://127.0.0.1:8000/follow/remove/${id}/`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${accessToken}`
             }
+        }).catch((error) => {
+            console.log(error);
+            setErrorMessage("Failed to remove stock. Please try again.");
         });
         setStocks(stocks.filter((stock) => stock.id !== id));
     }
 
     return (
         <div className='whole-page'>
+            {errorMessage && <div className="error-message">{errorMessage}</div>}
+            {loading && <div className="loading-message">Loading...</div>}
             <SearchBar addStock={addStock} suggestions={suggestions} enteredText={enteredText} searchBarChange={searchBarChange} suggestionsClick={suggestionsClick} />
             {stocks.length > 0 &&
                 <StockTable stocks={stocks} removeStock={removeStock} />

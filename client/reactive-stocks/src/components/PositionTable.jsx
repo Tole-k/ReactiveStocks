@@ -1,4 +1,6 @@
-export default function PositionTable({ chosen_portfolio, positions, Change, calculatePositionXirr, setSellAmount, setSellPrice, closePosition }) {
+import Change from "../utils/Change";
+
+export default function PositionTable({ chosen_portfolio, positions, calculatePositionXirr, setSellAmount, setSellPrice, closePosition }) {
     return (
         <div className='tableWrap'>
             <table className='stock-table'>

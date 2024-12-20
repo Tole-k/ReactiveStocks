@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import Dropdown from 'react-bootstrap/Dropdown';
+import { useNavigate } from "react-router-dom";
 import axios from '../axiosConfig';
 import PortfolioPieChart from "../components/PortfolioPieChart";
 import PortfolioSelector from "../components/PortfolioSelector";
 import { RebalancingRecommendations } from "../components/RebalancingRecommendations";
 import { AllocationForm } from "../components/AllocationForm";
+import { checkAuth } from '../utils/auth'; // Import the checkAuth function
+import { fetchPortfolios, fetchPositions, fetchSuggestions } from '../utils/dataFetchers'; // Import the data fetchers
 
 export default function PieCharts() {
     const [positions, setPositions] = useState([]);
@@ -17,81 +19,50 @@ export default function PieCharts() {
     const [chosen_portfolio, setChosenPortfolio] = useState(null);
     const [proportions, setProportions] = useState([]);
     const [recommendations, setRecommendations] = useState([]);
+    const [errorMessage, setErrorMessage] = useState("");
+    const [loading, setLoading] = useState(false);
 
     const accessToken = localStorage.getItem('access_token');
     const enable_suggestions = true;
+    const navigate = useNavigate();
 
     useEffect(() => {
-        const checkAuth = async () => {
-            try {
-                const response = await axios.get("http://127.0.0.1:8000/user_auth/whoami/", {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${accessToken}`
-                    }
-                });
-                if (response.status === 200) {
-                    setIsAuthenticated(true);
-                }
-            } catch {
-                setIsAuthenticated(false);
-                window.location.href = '/user_auth/login';
-            }
-        };
+        async function authenticate() {
+            const isAuthenticated = await checkAuth(accessToken, navigate);
+            setIsAuthenticated(isAuthenticated);
+        }
 
-        checkAuth();
-    }, [accessToken]);
+        authenticate();
+    }, [accessToken, navigate]);
 
     useEffect(() => {
-        const fetchPortfolios = async () => {
-            try {
-                const response = await axios.get("http://127.0.0.1:8000/piechart/", {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${accessToken}`
-                    }
-                });
-                if (response.status === 204) {
-                    console.log("No portfolios found");
-                } else {
-                    setPortfolios(response.data);
-                }
-            } catch (error) {
-                console.log(error);
-            }
-        };
+        async function loadPortfolios() {
+            setLoading(true);
+            const portfoliosData = await fetchPortfolios(accessToken);
+            setPortfolios(portfoliosData);
+            setLoading(false);
+        }
 
         if (isAuthenticated) {
-            fetchPortfolios();
+            loadPortfolios();
         }
     }, [accessToken, isAuthenticated]);
 
     useEffect(() => {
-        const fetchPositions = async () => {
-            if (chosen_portfolio) {
-                try {
-                    const response = await axios.get(`http://127.0.0.1:8000/portfolio/${chosen_portfolio.id}/`, {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${accessToken}`
-                        }
-                    });
-                    if (response.status === 200) {
-                        setPositions(response.data);
-                    }
-                } catch (error) {
-                    console.log(error);
-                }
-            }
-        };
+        async function loadPositions() {
+            setLoading(true);
+            const positionsData = await fetchPositions(accessToken, chosen_portfolio);
+            setPositions(positionsData);
+            setLoading(false);
+        }
 
         if (chosen_portfolio) {
-            fetchPositions();
+            loadPositions();
         }
     }, [accessToken, chosen_portfolio]);
 
     useEffect(() => {
-        const fetchProportions = async () => {
+        async function fetchProportions() {
             if (chosen_portfolio) {
                 try {
                     const response = await axios.get(`http://127.0.0.1:8000/portfolio/allocation/${chosen_portfolio.id}/`, {
@@ -107,20 +78,22 @@ export default function PieCharts() {
                     console.log(error);
                 }
             }
-        };
+        }
         if (chosen_portfolio) {
             fetchProportions();
         }
     }, [accessToken, chosen_portfolio]);
+
     useEffect(() => {
         const storedPortfolio = localStorage.getItem('chosen_portfolio');
         if (storedPortfolio) {
             setChosenPortfolio(JSON.parse(storedPortfolio));
         }
     }, []);
+
     useEffect(() => {
         setRecommendations([]);
-        const generate_recommendations = async () => {
+        async function generate_recommendations() {
             const total_value = positions.reduce((acc, position) => acc + position.quantity * position.stock.price, 0);
             let props = {};
             for (const position of positions) {
@@ -154,44 +127,29 @@ export default function PieCharts() {
         }
         generate_recommendations();
     }, [positions, proportions]);
-    const choose_portfolio = (portfolio) => {
+
+    function choose_portfolio(portfolio) {
         localStorage.setItem('chosen_portfolio', JSON.stringify(portfolio));
         setChosenPortfolio(portfolio);
     }
 
-    const fetchSuggestions = async (symbol) => {
-        if (symbol !== "") {
-            try {
-                const response = await axios.get(`http://127.0.0.1:8000/follow/suggestions/${symbol}/`, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${accessToken}`
-                    }
-                });
-                setSuggestions(response.data);
-            } catch (error) {
-                console.log(error);
-            }
-        }
-    }
-
-    const searchBarChange = (event) => {
+    function searchBarChange(event) {
         setEnteredText(event.target.value);
         setSymbol(event.target.value);
         if (enable_suggestions)
-            fetchSuggestions(event.target.value);
+            fetchSuggestions(event.target.value, accessToken, setSuggestions);
         if (!event.target.value) {
             setSuggestions([]);
         }
     }
 
-    const suggestionsClick = (symbol) => {
+    function suggestionsClick(symbol) {
         setSymbol(symbol);
         setEnteredText(symbol);
         setSuggestions([]);
     }
 
-    const prepare_portfolio_data = () => {
+    function prepare_portfolio_data() {
         const sum = positions.reduce((acc, position) => acc + position.quantity * position.stock.price, 0);
         const data = positions.map((position) => ({
             name: position.stock.symbol,
@@ -200,7 +158,7 @@ export default function PieCharts() {
         return data;
     }
 
-    const prepare_allocation_data = () => {
+    function prepare_allocation_data() {
         const sum = proportions.reduce((acc, proportion) => acc + proportion.allocation, 0);
         const data = proportions.map(proportion => ({
             name: proportion.stock,
@@ -211,7 +169,7 @@ export default function PieCharts() {
         return data;
     }
 
-    const add_allocation = async (e) => {
+    async function add_allocation(e) {
         const data = {
             symbol,
             allocation,
@@ -243,12 +201,17 @@ export default function PieCharts() {
             setAllocation(0.0);
         }).catch((error) => {
             console.log(error);
+            setErrorMessage("Failed to add allocation. Please try again.");
         });
         e.preventDefault();
     }
+
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+
     return (
         <div className="whole-page">
+            {errorMessage && <div className="error-message">{errorMessage}</div>}
+            {loading && <div className="loading-message">Loading...</div>}
             <PortfolioSelector chosen_portfolio={chosen_portfolio} portfolios={portfolios} choose_portfolio={choose_portfolio} />
             {chosen_portfolio &&
                 <div style={{ display: 'flex', justifyContent: 'space-around' }}>
