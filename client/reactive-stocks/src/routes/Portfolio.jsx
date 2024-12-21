@@ -236,7 +236,7 @@ function Portfolio() {
     return (
         <Container className='whole-page'>
             {errorMessage && <div className="error-message">{errorMessage}</div>}
-            {loading && <Spinner animation="border" role="status"><span className="visually-hidden">Loading...</span></Spinner>}
+            {loading && <div className="spinner-container"><Spinner animation="border" role="status"><span className="visually-hidden">Loading...</span></Spinner></div>}
             {!loading &&
                 <PortfolioSelector chosen_portfolio={chosen_portfolio} portfolios={portfolios} create_new_portfolio={create_new_portfolio} choose_portfolio={choose_portfolio} />
             }

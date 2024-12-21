@@ -104,7 +104,7 @@ export default function FollowedStocks() {
     return (
         <Container className='whole-page'>
             {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
-            {loading && <Spinner animation="border" role="status"><span className="visually-hidden">Loading...</span></Spinner>}
+            {loading && <div className="spinner-container"><Spinner animation="border" role="status"><span className="visually-hidden">Loading...</span></Spinner></div>}
             {!loading &&
                 <SearchBar addStock={addStock} suggestions={suggestions} enteredText={enteredText} searchBarChange={searchBarChange} suggestionsClick={suggestionsClick} />
             }

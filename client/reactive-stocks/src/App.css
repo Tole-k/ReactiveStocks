@@ -30,7 +30,7 @@ button {
 button.buy {
   background-color: #4caf50;
   margin-left: 10;
-  margin-top: 20px;
+  margin-top: 37px;
 }
 
 button.sell {
@@ -136,6 +136,7 @@ button.follow {
 
 .tableWrap {
   height: 400px;
+  width: 100%;
   overflow-y: auto;
 }
 
@@ -221,4 +222,11 @@ thead tr th {
 }
 .negative {
   color: red;
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
 }

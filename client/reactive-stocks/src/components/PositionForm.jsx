@@ -24,7 +24,7 @@ export default function PositionForm({ suggestions, enteredText, suggestionsClic
                     <Form.Label>Date:</Form.Label>
                     <Form.Control type="date" value={date} onChange={(e) => setDate(e.target.value)} />
                 </Form.Group>
-                <Button variant="success" onClick={openPosition}>Open</Button>
+                <Button className='buy' variant="success" onClick={openPosition}>Open</Button>
             </Form>
         </div>
     );
