@@ -1,21 +1,22 @@
 import Change from "../utils/Change";
+import { Table, Form, Button } from 'react-bootstrap';
 
 export default function PositionTable({ chosen_portfolio, positions, calculatePositionXirr, setSellAmount, setSellPrice, closePosition }) {
     return (
         <div className='tableWrap'>
-            <table className='stock-table'>
+            <Table striped bordered hover className='stock-table'>
                 <thead>
                     <tr>
-                        <th>Symbol</th>
-                        <th>Volume</th>
-                        <th>Purchase Value</th>
-                        <th>Market Value</th>
-                        <th>Avg Open Price</th>
-                        <th>Market Price</th>
-                        <th>Net Profit/Loss</th>
-                        <th>Net P/L %</th>
-                        <th>XIRR</th>
-                        <th>Sell</th>
+                        <th className="text-center align-middle">Symbol</th>
+                        <th className="text-center align-middle">Volume</th>
+                        <th className="text-center align-middle">Purchase Value</th>
+                        <th className="text-center align-middle">Market Value</th>
+                        <th className="text-center align-middle">Avg Open Price</th>
+                        <th className="text-center align-middle">Market Price</th>
+                        <th className="text-center align-middle">Net Profit/Loss</th>
+                        <th className="text-center align-middle">Net P/L %</th>
+                        <th className="text-center align-middle">XIRR</th>
+                        <th className="text-center align-middle">Sell</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -44,22 +45,21 @@ export default function PositionTable({ chosen_portfolio, positions, calculatePo
                             </td>
                             <td>
                                 <div className="sell-inputs">
-                                    <label>
-                                        Price:
-                                        <input type='number' placeholder='0' onChange={(e) => setSellPrice(e.target.value)} />
-                                    </label>
-                                    <label>
-                                        Quantity:
-                                        <input type='number' placeholder='0' onChange={(e) => setSellAmount(e.target.value)} />
-                                    </label>
-                                    <button className='sell' onClick={() => closePosition(position.id)}>Sell</button>
+                                    <Form.Group>
+                                        <Form.Label>Price:</Form.Label>
+                                        <Form.Control type='number' placeholder='0' onChange={(e) => setSellPrice(e.target.value)} />
+                                    </Form.Group>
+                                    <Form.Group>
+                                        <Form.Label>Quantity:</Form.Label>
+                                        <Form.Control type='number' placeholder='0' onChange={(e) => setSellAmount(e.target.value)} />
+                                    </Form.Group>
+                                    <Button variant="danger" className='sell' onClick={() => closePosition(position.id)}>Sell</Button>
                                 </div>
-
                             </td>
                         </tr>
                     ))}
                 </tbody>
-            </table>
+            </Table>
         </div>
     );
 }

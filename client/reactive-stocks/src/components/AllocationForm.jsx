@@ -1,5 +1,6 @@
 import { Form, Button, InputGroup, Dropdown } from 'react-bootstrap';
 
+
 export function AllocationForm({ enteredText, searchBarChange, suggestionsClick, setAllocation, allocation, add_allocation, suggestions }) {
     return (
         <Form.Label>

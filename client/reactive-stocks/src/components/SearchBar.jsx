@@ -1,4 +1,5 @@
-import { Form, Button, InputGroup, Dropdown } from 'react-bootstrap';
+import { Form, Button, InputGroup } from 'react-bootstrap';
+import Suggestions from './Suggestions';
 
 export default function SearchBar({ addStock, suggestions, enteredText, searchBarChange, suggestionsClick }) {
     return (
@@ -9,14 +10,9 @@ export default function SearchBar({ addStock, suggestions, enteredText, searchBa
                     <Form.Control type="text" placeholder="Stock Symbol..." value={enteredText} onChange={searchBarChange} />
                     <Button variant="success" onClick={addStock}>Follow</Button>
                 </InputGroup>
-                <Dropdown className='dropdown' id='followed'>
-                    {suggestions.length ? suggestions.map((suggestion, index) => (
-                        <Dropdown.Item key={index} onClick={() => suggestionsClick(suggestion.symbol)}>
-                            {suggestion.symbol} ({suggestion.name})
-                        </Dropdown.Item>
-                    )) : null}
-                </Dropdown>
+                <Suggestions suggestions={suggestions} suggestionsClick={suggestionsClick} id='followed' />
             </div>
         </>
     );
 }
+

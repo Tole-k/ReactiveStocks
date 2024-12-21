@@ -1,4 +1,5 @@
-import { Form, Button, InputGroup, Dropdown } from 'react-bootstrap';
+import { Form, Button } from 'react-bootstrap';
+import Suggestions from './Suggestions';
 
 export default function PositionForm({ suggestions, enteredText, suggestionsClick, quantity, price, date, openPosition, setDate, setPrice, searchBarChange, setQuantity }) {
     return (
@@ -8,13 +9,7 @@ export default function PositionForm({ suggestions, enteredText, suggestionsClic
                     <Form.Group>
                         <Form.Label>Symbol:</Form.Label>
                         <Form.Control type="text" placeholder="Stock Symbol..." value={enteredText} onChange={searchBarChange} />
-                        <Dropdown className='dropdown' id='portfolio'>
-                            {suggestions.length ? suggestions.map((suggestion, index) => (
-                                <Dropdown.Item key={index} onClick={() => suggestionsClick(suggestion.symbol)}>
-                                    {suggestion.symbol} ({suggestion.name})
-                                </Dropdown.Item>
-                            )) : null}
-                        </Dropdown>
+                        <Suggestions suggestions={suggestions} suggestionsClick={suggestionsClick} id='portfolio' />
                     </Form.Group>
                 </div>
                 <Form.Group>

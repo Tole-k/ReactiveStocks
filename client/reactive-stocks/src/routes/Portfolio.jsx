@@ -8,6 +8,7 @@ import PositionTable from '../components/PositionTable';
 import PortfolioSelector from '../components/PortfolioSelector';
 import { checkAuth } from '../utils/auth'; // Import the checkAuth function
 import { fetchPortfolios, fetchPositions, fetchSuggestions } from '../utils/dataFetchers'; // Import the data fetchers
+import { Spinner, Container } from 'react-bootstrap';
 
 function Portfolio() {
     const [positions, setPositions] = useState([]);
@@ -233,11 +234,13 @@ function Portfolio() {
     }
 
     return (
-        <div className='whole-page'>
+        <Container className='whole-page'>
             {errorMessage && <div className="error-message">{errorMessage}</div>}
-            {loading && <div className="loading-message">Loading...</div>}
-            <PortfolioSelector chosen_portfolio={chosen_portfolio} portfolios={portfolios} create_new_portfolio={create_new_portfolio} choose_portfolio={choose_portfolio} />
-            {portfolios.length > 0 &&
+            {loading && <Spinner animation="border" role="status"><span className="visually-hidden">Loading...</span></Spinner>}
+            {!loading &&
+                <PortfolioSelector chosen_portfolio={chosen_portfolio} portfolios={portfolios} create_new_portfolio={create_new_portfolio} choose_portfolio={choose_portfolio} />
+            }
+            {!loading && portfolios.length > 0 &&
                 <div>
                     <PositionForm suggestions={suggestions} enteredText={enteredText} suggestionsClick={suggestionsClick} quantity={quantity} price={price} date={date} openPosition={openPosition} setDate={setDate} setPrice={setPrice} searchBarChange={searchBarChange} setQuantity={setQuantity} />
                     {positions.length > 0 &&
@@ -248,7 +251,7 @@ function Portfolio() {
                     }
                 </div>
             }
-        </div>
+        </Container>
     )
 }
 

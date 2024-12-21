@@ -105,8 +105,10 @@ export default function FollowedStocks() {
         <Container className='whole-page'>
             {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
             {loading && <Spinner animation="border" role="status"><span className="visually-hidden">Loading...</span></Spinner>}
-            <SearchBar addStock={addStock} suggestions={suggestions} enteredText={enteredText} searchBarChange={searchBarChange} suggestionsClick={suggestionsClick} />
-            {stocks.length > 0 &&
+            {!loading &&
+                <SearchBar addStock={addStock} suggestions={suggestions} enteredText={enteredText} searchBarChange={searchBarChange} suggestionsClick={suggestionsClick} />
+            }
+            {!loading && stocks.length > 0 &&
                 <StockTable stocks={stocks} removeStock={removeStock} />
             }
         </Container>

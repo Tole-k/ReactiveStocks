@@ -2,6 +2,7 @@ html,
 body {
   margin: 0;
   padding: 0%;
+  overflow: hidden;
 }
 
 * {
@@ -128,11 +129,14 @@ button.follow {
 
 .whole-page {
   padding: 100px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .tableWrap {
   height: 400px;
-  overflow: auto;
+  overflow-y: auto;
 }
 
 table.stock-table {
@@ -146,7 +150,6 @@ table.stock-table td {
   padding: 12px 15px;
   border: 1px solid #ddd;
   text-align: center;
-  width: 200px;
 }
 
 table.stock-table th {

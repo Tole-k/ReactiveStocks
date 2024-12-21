@@ -40,7 +40,7 @@ export async function fetchPositions(accessToken, chosen_portfolio) {
 }
 
 export async function fetchSuggestions(symbol, accessToken, setSuggestions) {
-    if (symbol !== "") {
+    if (symbol.length > 1) {
         try {
             const response = await axios.get(`http://127.0.0.1:8000/follow/suggestions/${symbol}/`, {
                 headers: {

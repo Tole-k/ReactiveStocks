@@ -5,17 +5,29 @@ from .serializer import StockSerializer
 import requests
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
-updater = True
+from django.core.cache import cache
+from datetime import datetime, timedelta
 
+updater = True
 APIKEY = 'smwtbHsasmvEoGzGfDTq5Wo5xcqVHQvu'
+CACHE_TIMEOUT = 300  # 5 minutes in seconds
 
 
 def update(stocks):
     if len(stocks) == 0:
         return
     symbols = ','.join([stock.symbol for stock in stocks])
-    data = requests.get(
-        f'https://financialmodelingprep.com/api/v3/quote/{symbols}?apikey={APIKEY}').json()
+    cache_key = f'stock_data_{symbols}'
+    cached_data = cache.get(cache_key)
+    current_time = datetime.now()
+
+    if cached_data and (current_time - cached_data['timestamp']).total_seconds() < CACHE_TIMEOUT:
+        data = cached_data['data']
+    else:
+        data = requests.get(
+            f'https://financialmodelingprep.com/api/v3/quote/{symbols}?apikey={APIKEY}').json()
+        cache.set(cache_key, {'data': data,
+                  'timestamp': current_time}, CACHE_TIMEOUT)
     for i, stock in enumerate(stocks):
         stock.price = data[i]['price']
         stock.changesPercentage = data[i]['changesPercentage']

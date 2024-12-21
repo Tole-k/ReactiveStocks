@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import Container from 'react-bootstrap/Container';
+import { Container, Row, Col } from "react-bootstrap"
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import { useState, useEffect } from 'react';
@@ -30,23 +30,6 @@ export default function App() {
         };
         checkAuth();
     }, [isAuthenticated, accessToken]);
-
-    async function fetchSuggestions(symbol, setSuggestions) {
-        if (symbol !== "") {
-            try {
-                const response = await axios.get(`http://127.0.0.1:8000/follow/suggestions/${symbol}/`, {
-                    method: "GET",
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${accessToken}`
-                    }
-                });
-                setSuggestions(response.data);
-            } catch (error) {
-                console.log(error);
-            }
-        }
-    }
 
 
     return (
@@ -85,9 +68,18 @@ export default function App() {
                     </Navbar.Collapse>
                 </Container>
             </Navbar>
-            <div id="detail">
+            <div id="detail" style={{ flex: 1 }}>
                 <Outlet />
             </div>
+            <footer className="bg-dark text-white p-4 text-center foot" style={{ position: 'fixed', bottom: 0, width: '100%' }}>
+                <Container>
+                    <Row>
+                        <Col>
+                            <p>&copy; {new Date().getFullYear()} ReactiveStocks. All Rights Reserved.</p>
+                        </Col>
+                    </Row>
+                </Container>
+            </footer>
         </>
     );
 }

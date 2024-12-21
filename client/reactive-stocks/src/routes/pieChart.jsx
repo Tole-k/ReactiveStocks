@@ -7,6 +7,7 @@ import { RebalancingRecommendations } from "../components/RebalancingRecommendat
 import { AllocationForm } from "../components/AllocationForm";
 import { checkAuth } from '../utils/auth'; // Import the checkAuth function
 import { fetchPortfolios, fetchPositions, fetchSuggestions } from '../utils/dataFetchers'; // Import the data fetchers
+import { Spinner } from "react-bootstrap";
 
 export default function PieCharts() {
     const [positions, setPositions] = useState([]);
@@ -211,9 +212,11 @@ export default function PieCharts() {
     return (
         <div className="whole-page">
             {errorMessage && <div className="error-message">{errorMessage}</div>}
-            {loading && <div className="loading-message">Loading...</div>}
-            <PortfolioSelector chosen_portfolio={chosen_portfolio} portfolios={portfolios} choose_portfolio={choose_portfolio} />
-            {chosen_portfolio &&
+            {loading && <Spinner animation="border" role="status"><span className="visually-hidden">Loading...</span></Spinner>}
+            {!loading &&
+                <PortfolioSelector chosen_portfolio={chosen_portfolio} portfolios={portfolios} choose_portfolio={choose_portfolio} />
+            }
+            {!loading && chosen_portfolio &&
                 <div style={{ display: 'flex', justifyContent: 'space-around' }}>
                     <div>
                         <PortfolioPieChart prepare_data={prepare_portfolio_data} COLORS={COLORS} label={'Current Portfolio'} />
