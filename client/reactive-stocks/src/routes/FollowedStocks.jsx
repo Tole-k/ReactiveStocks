@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import SearchBar from '../components/SearchBar';
 import StockTable from '../components/StockTable';
-import { fetchSuggestions } from '../utils/dataFetchers'; // Import the fetchSuggestions function
-import { checkAuth } from '../utils/auth'; // Import the checkAuth function
+import { fetchSuggestions } from '../utils/dataFetchers';
+import { checkAuth } from '../utils/auth';
 import { Container, Alert, Spinner } from 'react-bootstrap';
 
 export default function FollowedStocks() {
@@ -58,6 +58,10 @@ export default function FollowedStocks() {
         }
 
         async function authenticate() {
+            if (!accessToken) {
+                navigate('/user_auth/login');
+                return;
+            }
             const isAuthenticated = await checkAuth(accessToken, navigate);
             if (isAuthenticated) {
                 fetchStocks();

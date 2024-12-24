@@ -11,7 +11,9 @@ export async function checkAuth(accessToken, navigate) {
         if (response.status === 200) {
             return true;
         }
-    } catch {
+    } catch (error) {
+        console.log(error);
+        console.log("Not authenticated, redirecting to login");
         navigate('/user_auth/login');
         return false;
     }

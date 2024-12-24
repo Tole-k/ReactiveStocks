@@ -128,7 +128,7 @@ button.follow {
 }
 
 .whole-page {
-  padding: 100px;
+  padding: 50px;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -215,7 +215,6 @@ thead tr th {
 }
 .sell-inputs button {
   margin-top: 20px;
-  margin-left: 20px;
 }
 .positive {
   color: green;
@@ -229,4 +228,40 @@ thead tr th {
   justify-content: center;
   align-items: center;
   height: 100%;
+}
+
+.tableWrap {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.stock-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.sell-col {
+  width: 260px;
+}
+
+.sell-inputs {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 5px;
+}
+
+.sell-input-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0;
+}
+
+.sell-input-group input {
+  width: 60px;
+}
+
+.sell {
+  height: 38px;
+  margin-bottom: 0;
 }

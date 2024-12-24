@@ -3,7 +3,9 @@ import { PieChart, Pie, Cell } from "recharts";
 export default function PortfolioPieChart({ prepare_data, COLORS, label }) {
     return (
         <label>
-            {label}
+            <h4 className="text-primary mb-3" style={{ fontWeight: 600 }}>
+                {label}
+            </h4>
             <PieChart width={400} height={400}>
                 <Pie
                     data={prepare_data()}

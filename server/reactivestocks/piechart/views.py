@@ -59,5 +59,9 @@ class AddPortfolioAllocationView(APIView):
             if current_allocation > 1:
                 return Response({"error": "Allocation exceeds 100%"}, status=status.HTTP_400_BAD_REQUEST)
             dummy_position.allocation = allocation
-            dummy_position.save()
+            if dummy_position.allocation == 0:
+                dummy_position.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            else:
+                dummy_position.save()
         return JsonResponse(DummyPositionSerializer(dummy_position).data, status=status.HTTP_201_CREATED)

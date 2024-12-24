@@ -8,7 +8,7 @@ import PositionTable from '../components/PositionTable';
 import PortfolioSelector from '../components/PortfolioSelector';
 import { checkAuth } from '../utils/auth'; // Import the checkAuth function
 import { fetchPortfolios, fetchPositions, fetchSuggestions } from '../utils/dataFetchers'; // Import the data fetchers
-import { Spinner, Container } from 'react-bootstrap';
+import { Spinner, Container, Modal, Button, Form, Row, Col } from 'react-bootstrap';
 
 function Portfolio() {
     const [positions, setPositions] = useState([]);
@@ -25,6 +25,8 @@ function Portfolio() {
     const [sellPrice, setSellPrice] = useState(0.0);
     const [errorMessage, setErrorMessage] = useState("");
     const [loading, setLoading] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [newPortfolioName, setNewPortfolioName] = useState("");
 
     const accessToken = localStorage.getItem('access_token');
     const enable_suggestions = true;
@@ -79,7 +81,6 @@ function Portfolio() {
             average_price: price,
             timestamp: date
         };
-        console.log(positionData);
         axios.post(`http://127.0.0.1:8000/portfolio/open/${chosen_portfolio.id}/`, positionData, {
             headers: {
                 'Content-Type': 'application/json',
@@ -169,11 +170,19 @@ function Portfolio() {
         setChosenPortfolio(portfolio);
     }
 
+    function handleShowModal() {
+        setShowModal(true);
+    }
+
+    function handleCloseModal() {
+        setShowModal(false);
+        setNewPortfolioName("");
+    }
+
     async function create_new_portfolio() {
-        const portfolioName = prompt("Enter the name of the new portfolio:");
-        if (portfolioName) {
+        if (newPortfolioName) {
             try {
-                const response = await axios.post("http://127.0.0.1:8000/piechart/add/", { name: portfolioName }, {
+                const response = await axios.post("http://127.0.0.1:8000/piechart/add/", { name: newPortfolioName }, {
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${accessToken}`
@@ -182,6 +191,7 @@ function Portfolio() {
                 if (response.status === 201) {
                     setPortfolios((prev) => [...prev, response.data]);
                     choose_portfolio(response.data);
+                    handleCloseModal();
                 }
             } catch (error) {
                 console.log(error);
@@ -236,21 +246,80 @@ function Portfolio() {
     return (
         <Container className='whole-page'>
             {errorMessage && <div className="error-message">{errorMessage}</div>}
-            {loading && <div className="spinner-container"><Spinner animation="border" role="status"><span className="visually-hidden">Loading...</span></Spinner></div>}
+            {loading && (
+                <div className="spinner-container">
+                    <Spinner animation="border" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                    </Spinner>
+                </div>
+            )}
             {!loading &&
-                <PortfolioSelector chosen_portfolio={chosen_portfolio} portfolios={portfolios} create_new_portfolio={create_new_portfolio} choose_portfolio={choose_portfolio} />
+                <Row className="mb-4">
+                    <Col>
+                        <PortfolioSelector
+                            chosen_portfolio={chosen_portfolio}
+                            portfolios={portfolios}
+                            create_new_portfolio={handleShowModal}
+                            choose_portfolio={choose_portfolio}
+                        />
+                    </Col>
+                </Row>
             }
             {!loading && portfolios.length > 0 &&
                 <div>
-                    <PositionForm suggestions={suggestions} enteredText={enteredText} suggestionsClick={suggestionsClick} quantity={quantity} price={price} date={date} openPosition={openPosition} setDate={setDate} setPrice={setPrice} searchBarChange={searchBarChange} setQuantity={setQuantity} />
+                    <PositionForm
+                        suggestions={suggestions}
+                        enteredText={enteredText}
+                        suggestionsClick={suggestionsClick}
+                        quantity={quantity}
+                        price={price}
+                        date={date}
+                        openPosition={openPosition}
+                        setDate={setDate}
+                        setPrice={setPrice}
+                        searchBarChange={searchBarChange}
+                        setQuantity={setQuantity}
+                    />
                     {positions.length > 0 &&
-                        <PositionTable chosen_portfolio={chosen_portfolio} positions={positions} calculatePositionXirr={calculatePositionXirr} setSellAmount={setSellAmount} setSellPrice={setSellPrice} closePosition={closePosition} />
-                    }
-                    {positions.length > 0 &&
-                        <XirrSummary calculatePortfolioXirr={calculatePortfolioXirr} positions={positions} />
+                        <>
+                            <PositionTable
+                                chosen_portfolio={chosen_portfolio}
+                                positions={positions}
+                                calculatePositionXirr={calculatePositionXirr}
+                                setSellAmount={setSellAmount}
+                                setSellPrice={setSellPrice}
+                                closePosition={closePosition}
+                            />
+                            <XirrSummary
+                                calculatePortfolioXirr={calculatePortfolioXirr}
+                                positions={positions}
+                            />
+                        </>
                     }
                 </div>
             }
+
+            <Modal show={showModal} onHide={handleCloseModal}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Create New Portfolio</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group controlId="formPortfolioName">
+                            <Form.Label>Portfolio Name</Form.Label>
+                            <Form.Control type="text" placeholder="Enter portfolio name" value={newPortfolioName} onChange={(e) => setNewPortfolioName(e.target.value)} />
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleCloseModal}>
+                        Close
+                    </Button>
+                    <Button variant="primary" onClick={create_new_portfolio}>
+                        Create Portfolio
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </Container>
     )
 }

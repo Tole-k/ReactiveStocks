@@ -1,5 +1,8 @@
 import axios from '../axiosConfig';
+import { useNavigate } from 'react-router-dom';
 import { useState } from "react";
+import { Alert, Container, Spinner } from "react-bootstrap";
+
 export default function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -7,7 +10,7 @@ export default function Login() {
     const [repeatPassword, setRepeatPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [loading, setLoading] = useState(false);
-
+    const navigate = useNavigate();
     async function login(e) {
         e.preventDefault();
         setLoading(true);
@@ -29,7 +32,7 @@ export default function Login() {
             localStorage.setItem('refresh_token', refresh);
             axios.defaults.headers.common['Authorization'] =
                 `Bearer ${access}`;
-            window.location.href = '/follow'
+            navigate('/');
         } catch (e) {
             console.log('login not working', e);
             setErrorMessage("Login failed. Please check your credentials and try again.");
@@ -64,7 +67,7 @@ export default function Login() {
             }
         } catch (e) {
             console.log('Register not working', e);
-            setErrorMessage("Registration failed. Please check your details and try again.");
+            setErrorMessage(`Registration failed. ${e.response.data.message}`);
         } finally {
             setLoading(false);
         }
@@ -72,8 +75,8 @@ export default function Login() {
 
     return (
         <>
-            {errorMessage && <div className="error-message">{errorMessage}</div>}
-            {loading && <div className="loading-message">Loading...</div>}
+            {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
+            {loading && <div className="spinner-container"><Spinner animation="border" role="status"><span className="visually-hidden">Loading...</span></Spinner></div>}
             <div className="Auth-form-container">
                 <form className="Auth-form" onSubmit={login}>
                     <div className="Auth-form-content">

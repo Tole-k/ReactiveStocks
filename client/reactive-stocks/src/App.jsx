@@ -3,33 +3,21 @@ import { Container, Row, Col } from "react-bootstrap"
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import { useState, useEffect } from 'react';
-import axios from './axiosConfig';
+import { checkAuth } from "./utils/auth";
+import { useNavigate } from "react-router-dom";
 
 export default function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const accessToken = localStorage.getItem('access_token');
+    const navigate = useNavigate();
+
     useEffect(() => {
-        const checkAuth = async () => {
-            await axios.get("http://127.0.0.1:8000/user_auth/whoami/", {
-                method: "GET",
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`
-                }
-            }).then((response) => {
-                console.log(response);
-                if (response.status === 200) {
-                    console.log(response.data)
-                    setIsAuthenticated(true);
-                }
-            }).catch((error) => {
-                console.log(error);
-                console.log("Not authenticated, redirecting to login");
-                setIsAuthenticated(false);
-            });
-        };
-        checkAuth();
-    }, [isAuthenticated, accessToken]);
+        async function authenticate() {
+            const isAuthenticated = await checkAuth(accessToken, navigate);
+            setIsAuthenticated(isAuthenticated);
+        }
+        authenticate();
+    }, [accessToken, navigate]);
 
 
     return (

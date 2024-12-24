@@ -5,8 +5,8 @@ import PortfolioPieChart from "../components/PortfolioPieChart";
 import PortfolioSelector from "../components/PortfolioSelector";
 import { RebalancingRecommendations } from "../components/RebalancingRecommendations";
 import { AllocationForm } from "../components/AllocationForm";
-import { checkAuth } from '../utils/auth'; // Import the checkAuth function
-import { fetchPortfolios, fetchPositions, fetchSuggestions } from '../utils/dataFetchers'; // Import the data fetchers
+import { checkAuth } from '../utils/auth';
+import { fetchPortfolios, fetchPositions, fetchSuggestions } from '../utils/dataFetchers';
 import { Spinner } from "react-bootstrap";
 
 export default function PieCharts() {
@@ -180,26 +180,31 @@ export default function PieCharts() {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${accessToken}`
             }
-        }).then((response) => response.data).then((data) => {
-            if (proportions.some((proportion) => proportion.symbol === symbol)) {
-                const next_proportions = proportions.map((proportion) => {
-                    if (proportion.stock === symbol) {
-                        return {
-                            ...proportion,
-                            ...data
-                        };
-                    }
-                    return proportion;
-                });
-                setProportions(next_proportions)
+        }).then((response) => {
+            if (response.status === 201) {
+                if (proportions.some((proportion) => proportion.symbol === symbol)) {
+                    const next_proportions = proportions.map((proportion) => {
+                        if (proportion.stock === symbol) {
+                            return {
+                                ...proportion,
+                                ...response.data
+                            };
+                        }
+                        return proportion;
+                    });
+                    setProportions(next_proportions)
+                }
+                else {
+                    setProportions((prev) => [...prev, response.data]);
+                }
+                setEnteredText("");
+                setSuggestions([]);
+                setSymbol("");
+                setAllocation(0.0);
             }
-            else {
-                setProportions((prev) => [...prev, data]);
+            else if (response.status === 204) {
+                setProportions((prev) => prev.filter((proportion) => proportion.stock !== symbol));
             }
-            setEnteredText("");
-            setSuggestions([]);
-            setSymbol("");
-            setAllocation(0.0);
         }).catch((error) => {
             console.log(error);
             setErrorMessage("Failed to add allocation. Please try again.");
