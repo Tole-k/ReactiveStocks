@@ -4,20 +4,22 @@ import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import { useState, useEffect } from 'react';
 import { checkAuth } from "./utils/auth";
-import { useNavigate } from "react-router-dom";
 
 export default function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const accessToken = localStorage.getItem('access_token');
-    const navigate = useNavigate();
 
     useEffect(() => {
-        async function authenticate() {
-            const isAuthenticated = await checkAuth(accessToken, navigate);
-            setIsAuthenticated(isAuthenticated);
+        fetchData();
+    }, []);
+
+    async function fetchData() {
+        try {
+            const auth = await checkAuth();
+            setIsAuthenticated(auth);
+        } catch {
+            setIsAuthenticated(false);
         }
-        authenticate();
-    }, [accessToken, navigate]);
+    }
 
 
     return (
@@ -57,7 +59,7 @@ export default function App() {
                 </Container>
             </Navbar>
             <div id="detail" style={{ flex: 1 }}>
-                <Outlet />
+                <Outlet context={{ toggle_auth: (bool) => setIsAuthenticated(bool) }} />
             </div>
             <footer className="bg-dark text-white p-4 text-center foot" style={{ position: 'fixed', bottom: 0, width: '100%' }}>
                 <Container>

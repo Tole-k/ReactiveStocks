@@ -1,20 +1,41 @@
-import axios from '../axiosConfig';
+import api from '../api';
+import { jwtDecode } from 'jwt-decode';
+import { ACCESS_TOKEN, REFRESH_TOKEN } from '../constants';
 
-export async function checkAuth(accessToken, navigate) {
+async function refreshToken() {
+    const refreshToken = localStorage.getItem(REFRESH_TOKEN);
     try {
-        const response = await axios.get("http://127.0.0.1:8000/user_auth/whoami/", {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${accessToken}`
-            }
+        const response = await api.post('http://localhost:8000/token/refresh/', {
+            refresh: refreshToken
         });
+
         if (response.status === 200) {
+            localStorage.setItem(ACCESS_TOKEN, response.data.access);
             return true;
         }
+        else {
+            return false;
+        }
     } catch (error) {
-        console.log(error);
-        console.log("Not authenticated, redirecting to login");
-        navigate('/user_auth/login');
+        console.error('Token refresh error:', error);
         return false;
     }
-}
+};
+export async function checkAuth() {
+    const token = localStorage.getItem(ACCESS_TOKEN);
+    if (!token) {
+        return false;
+    }
+
+    const decodedToken = jwtDecode(token);
+    const tokenExpiration = decodedToken.exp * 1000;
+    const currentTime = Date.now();
+
+    if (tokenExpiration < currentTime) {
+        const refreshed = await refreshToken();
+        return refreshed;
+    }
+    else {
+        return true;
+    }
+};

@@ -1,13 +1,8 @@
-import axios from '../axiosConfig';
+import api from '../api';
 
-export async function fetchPortfolios(accessToken) {
+export async function fetchPortfolios() {
     try {
-        const response = await axios.get("http://127.0.0.1:8000/piechart/", {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${accessToken}`
-            }
-        });
+        const response = await api.get("http://127.0.0.1:8000/piechart/");
         if (response.status === 204) {
             console.log("No portfolios found");
             return [];
@@ -20,15 +15,10 @@ export async function fetchPortfolios(accessToken) {
     }
 }
 
-export async function fetchPositions(accessToken, chosen_portfolio) {
+export async function fetchPositions(chosen_portfolio) {
     if (chosen_portfolio) {
         try {
-            const response = await axios.get(`http://127.0.0.1:8000/portfolio/${chosen_portfolio.id}/`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`
-                }
-            });
+            const response = await api.get(`http://127.0.0.1:8000/portfolio/${chosen_portfolio.id}/`);
             if (response.status === 200) {
                 return response.data;
             }
@@ -39,15 +29,10 @@ export async function fetchPositions(accessToken, chosen_portfolio) {
     return [];
 }
 
-export async function fetchSuggestions(symbol, accessToken, setSuggestions) {
+export async function fetchSuggestions(symbol, setSuggestions) {
     if (symbol.length > 1) {
         try {
-            const response = await axios.get(`http://127.0.0.1:8000/follow/suggestions/${symbol}/`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`
-                }
-            });
+            const response = await api.get(`http://127.0.0.1:8000/follow/suggestions/${symbol}/`);
             setSuggestions(response.data);
         } catch (error) {
             console.log(error);

@@ -7,6 +7,10 @@ from portfolio.serializer import DummyPositionSerializer
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from portfolio.models import DummyPosition
+import requests
+from follow.serializer import StockSerializer
+from follow.models import Stock
+APIKEY = 'smwtbHsasmvEoGzGfDTq5Wo5xcqVHQvu'
 
 
 class PortfolioView(APIView):
@@ -37,27 +41,44 @@ class AddPortfolioAllocationView(APIView):
     permission_classes = (IsAuthenticated, )
 
     def post(self, request, pk):
-        portfolio = Portfolio.objects.get(pk=pk)
+        portfolio = Portfolio.objects.get(pk=pk, user=request.user)
         data = request.data
         symbol = data['symbol']
+
+        stock = Stock.objects.filter(symbol=symbol).first()
+        if stock is None:
+            stock_data = requests.get(
+                f'https://financialmodelingprep.com/api/v3/quote/{symbol}?apikey={APIKEY}').json()
+            if len(stock_data) == 0:
+                return JsonResponse({"message": "Stock not found"}, status=status.HTTP_404_NOT_FOUND)
+            stock_data = stock_data[0]
+            serializer = StockSerializer(data=stock_data)
+            if serializer.is_valid():
+                serializer.save()
+                stock = Stock.objects.get(symbol=symbol)
+                stock.save()
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if stock is None:
+            return JsonResponse({"message": "Stock could not be created or retrieved"}, status=status.HTTP_400_BAD_REQUEST)
+
         allocation = data['allocation']
         dummy_position = DummyPosition.objects.filter(
-            portfolio=portfolio, stock=symbol, user=request.user).first()
+            portfolio=portfolio, stock=stock).first()
         if dummy_position is None:
             current_allocation = sum(
-                [position.allocation for position in DummyPosition.objects.filter(portfolio=portfolio, user=request.user)])+float(allocation)
+                [position.allocation for position in DummyPosition.objects.filter(portfolio=portfolio)])+float(allocation)
             if current_allocation > 1:
-                return Response({"error": "Allocation exceeds 100%"}, status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse({"message": "Allocation exceeds 100%"}, status=status.HTTP_400_BAD_REQUEST)
             dummy_position = DummyPosition.objects.create(
-                portfolio=portfolio, stock=symbol, allocation=allocation, user=request.user)
+                portfolio=portfolio, stock=stock, allocation=allocation)
         else:
             current_allocation = sum(
                 [position.allocation for position in DummyPosition.objects.filter(
                     portfolio=portfolio,
-                    user=request.user
                 )])+float(allocation)-float(dummy_position.allocation)
             if current_allocation > 1:
-                return Response({"error": "Allocation exceeds 100%"}, status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse({"message": "Allocation exceeds 100%"}, status=status.HTTP_400_BAD_REQUEST)
             dummy_position.allocation = allocation
             if dummy_position.allocation == 0:
                 dummy_position.delete()

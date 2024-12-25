@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from '../axiosConfig';
+import api from '../api';
 import PortfolioPieChart from "../components/PortfolioPieChart";
 import PortfolioSelector from "../components/PortfolioSelector";
 import { RebalancingRecommendations } from "../components/RebalancingRecommendations";
 import { AllocationForm } from "../components/AllocationForm";
-import { checkAuth } from '../utils/auth';
 import { fetchPortfolios, fetchPositions, fetchSuggestions } from '../utils/dataFetchers';
-import { Spinner } from "react-bootstrap";
+import { Spinner, Container, Row, Col, Alert } from "react-bootstrap";
 
 export default function PieCharts() {
     const [positions, setPositions] = useState([]);
@@ -15,44 +13,28 @@ export default function PieCharts() {
     const [allocation, setAllocation] = useState(0.0);
     const [suggestions, setSuggestions] = useState([]);
     const [enteredText, setEnteredText] = useState('');
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [portfolios, setPortfolios] = useState([]);
     const [chosen_portfolio, setChosenPortfolio] = useState(null);
     const [proportions, setProportions] = useState([]);
     const [recommendations, setRecommendations] = useState([]);
     const [errorMessage, setErrorMessage] = useState("");
     const [loading, setLoading] = useState(false);
-
-    const accessToken = localStorage.getItem('access_token');
     const enable_suggestions = true;
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        async function authenticate() {
-            const isAuthenticated = await checkAuth(accessToken, navigate);
-            setIsAuthenticated(isAuthenticated);
-        }
-
-        authenticate();
-    }, [accessToken, navigate]);
 
     useEffect(() => {
         async function loadPortfolios() {
             setLoading(true);
-            const portfoliosData = await fetchPortfolios(accessToken);
+            const portfoliosData = await fetchPortfolios();
             setPortfolios(portfoliosData);
             setLoading(false);
         }
-
-        if (isAuthenticated) {
-            loadPortfolios();
-        }
-    }, [accessToken, isAuthenticated]);
+        loadPortfolios();
+    }, []);
 
     useEffect(() => {
         async function loadPositions() {
             setLoading(true);
-            const positionsData = await fetchPositions(accessToken, chosen_portfolio);
+            const positionsData = await fetchPositions(chosen_portfolio);
             setPositions(positionsData);
             setLoading(false);
         }
@@ -60,18 +42,13 @@ export default function PieCharts() {
         if (chosen_portfolio) {
             loadPositions();
         }
-    }, [accessToken, chosen_portfolio]);
+    }, [chosen_portfolio]);
 
     useEffect(() => {
         async function fetchProportions() {
             if (chosen_portfolio) {
                 try {
-                    const response = await axios.get(`http://127.0.0.1:8000/portfolio/allocation/${chosen_portfolio.id}/`, {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${accessToken}`
-                        }
-                    });
+                    const response = await api.get(`http://127.0.0.1:8000/portfolio/allocation/${chosen_portfolio.id}/`);
                     if (response.status === 200) {
                         setProportions(response.data);
                     }
@@ -83,7 +60,7 @@ export default function PieCharts() {
         if (chosen_portfolio) {
             fetchProportions();
         }
-    }, [accessToken, chosen_portfolio]);
+    }, [chosen_portfolio]);
 
     useEffect(() => {
         const storedPortfolio = localStorage.getItem('chosen_portfolio');
@@ -100,7 +77,7 @@ export default function PieCharts() {
             for (const position of positions) {
                 let found = false;
                 for (const proportion of proportions) {
-                    if (position.stock.symbol === proportion.stock) {
+                    if (position.stock.symbol === proportion.stock.symbol) {
                         const desired_value = total_value * proportion.allocation;
                         const current_value = position.quantity * position.stock.price;
                         const difference = desired_value - current_value;
@@ -112,7 +89,7 @@ export default function PieCharts() {
                             setRecommendations((prev) => [...prev, "Sell " + Math.round(Math.abs(shares_of_difference)) + " shares of " + position.stock.symbol]);
                         }
                         found = true;
-                        props[proportion.stock] = true;
+                        props[proportion.stock.symbol] = true;
                         break;
                     }
                 }
@@ -121,8 +98,8 @@ export default function PieCharts() {
                 }
             }
             for (const proportion of proportions) {
-                if (!props[proportion.stock]) {
-                    setRecommendations((prev) => [...prev, "Buy " + Math.round(total_value * proportion.allocation) + "$ worth of " + proportion.stock + " shares"]);
+                if (!props[proportion.stock.symbol]) {
+                    setRecommendations((prev) => [...prev, "Buy " + Math.round(total_value * proportion.allocation / proportion.stock.price) + " shares of " + proportion.stock.symbol]);
                 }
             }
         }
@@ -138,7 +115,7 @@ export default function PieCharts() {
         setEnteredText(event.target.value);
         setSymbol(event.target.value);
         if (enable_suggestions)
-            fetchSuggestions(event.target.value, accessToken, setSuggestions);
+            fetchSuggestions(event.target.value, setSuggestions);
         if (!event.target.value) {
             setSuggestions([]);
         }
@@ -162,7 +139,7 @@ export default function PieCharts() {
     function prepare_allocation_data() {
         const sum = proportions.reduce((acc, proportion) => acc + proportion.allocation, 0);
         const data = proportions.map(proportion => ({
-            name: proportion.stock,
+            name: proportion.stock.symbol,
             value: proportion.allocation
         }));
         if (sum < 1)
@@ -175,16 +152,12 @@ export default function PieCharts() {
             symbol,
             allocation,
         }
-        await axios.post(`http://127.0.0.1:8000/piechart/add_allocation/${chosen_portfolio.id}/`, data, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${accessToken}`
-            }
-        }).then((response) => {
+        await api.post(`http://127.0.0.1:8000/piechart/add_allocation/${chosen_portfolio.id}/`, data,).then((response) => {
+
             if (response.status === 201) {
-                if (proportions.some((proportion) => proportion.symbol === symbol)) {
+                if (proportions.some((proportion) => proportion.stock.symbol === symbol)) {
                     const next_proportions = proportions.map((proportion) => {
-                        if (proportion.stock === symbol) {
+                        if (proportion.stock.symbol === symbol) {
                             return {
                                 ...proportion,
                                 ...response.data
@@ -203,11 +176,11 @@ export default function PieCharts() {
                 setAllocation(0.0);
             }
             else if (response.status === 204) {
-                setProportions((prev) => prev.filter((proportion) => proportion.stock !== symbol));
+                setProportions((prev) => prev.filter((proportion) => proportion.stock.symbol !== symbol));
             }
         }).catch((error) => {
             console.log(error);
-            setErrorMessage("Failed to add allocation. Please try again.");
+            setErrorMessage(`Failed to add allocation. ${error.response.data.message}`);
         });
         e.preventDefault();
     }
@@ -215,32 +188,32 @@ export default function PieCharts() {
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
     return (
-        <div className="whole-page">
-            {errorMessage && <div className="error-message">{errorMessage}</div>}
+        <Container className="whole-page">
+            {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
             {loading && <div className="spinner-container">
                 <Spinner animation="border" role="status">
                     <span className="visually-hidden">Loading...</span>
                 </Spinner>
             </div>}
             {!loading &&
-                <PortfolioSelector chosen_portfolio={chosen_portfolio} portfolios={portfolios} choose_portfolio={choose_portfolio} />
+                <Row className="mb-4">
+                    <Col>
+                        <PortfolioSelector chosen_portfolio={chosen_portfolio} portfolios={portfolios} choose_portfolio={choose_portfolio} />
+                    </Col>
+                </Row>
             }
             {!loading && chosen_portfolio &&
-                <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-                    <div>
+                <Row>
+                    <Col md={6}>
                         <PortfolioPieChart prepare_data={prepare_portfolio_data} COLORS={COLORS} label={'Current Portfolio'} />
-                        <div>
-                            <RebalancingRecommendations recommendations={recommendations} />
-                        </div>
-                    </div>
-                    <div>
+                        <RebalancingRecommendations recommendations={recommendations} />
+                    </Col>
+                    <Col md={6}>
                         <PortfolioPieChart prepare_data={prepare_allocation_data} COLORS={COLORS} label={'Target Portfolio'} />
-                        <div>
-                            <AllocationForm enteredText={enteredText} searchBarChange={searchBarChange} suggestionsClick={suggestionsClick} setAllocation={setAllocation} allocation={allocation} add_allocation={add_allocation} suggestions={suggestions} />
-                        </div>
-                    </div>
-                </div>
+                        <AllocationForm enteredText={enteredText} searchBarChange={searchBarChange} suggestionsClick={suggestionsClick} setAllocation={setAllocation} allocation={allocation} add_allocation={add_allocation} suggestions={suggestions} />
+                    </Col>
+                </Row>
             }
-        </div>
+        </Container>
     );
 }

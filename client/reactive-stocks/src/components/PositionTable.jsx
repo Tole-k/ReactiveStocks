@@ -16,7 +16,6 @@ export default function PositionTable({ chosen_portfolio, positions, calculatePo
                         <th className="text-center align-middle">Net Profit/Loss</th>
                         <th className="text-center align-middle">Net P/L %</th>
                         <th className="text-center align-middle">XIRR</th>
-                        {/* Give the last column a special class */}
                         <th className="text-center align-middle sell-col">Sell</th>
                     </tr>
                 </thead>

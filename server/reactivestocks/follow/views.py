@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Stock
@@ -5,50 +6,8 @@ from .serializer import StockSerializer
 import requests
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
-from django.core.cache import cache
-from datetime import datetime, timedelta
-
-updater = True
+from utils.stock_updater import update
 APIKEY = 'smwtbHsasmvEoGzGfDTq5Wo5xcqVHQvu'
-CACHE_TIMEOUT = 300  # 5 minutes in seconds
-
-
-def update(stocks):
-    if len(stocks) == 0:
-        return
-    symbols = ','.join([stock.symbol for stock in stocks])
-    cache_key = f'stock_data_{symbols}'
-    cached_data = cache.get(cache_key)
-    current_time = datetime.now()
-
-    if cached_data and (current_time - cached_data['timestamp']).total_seconds() < CACHE_TIMEOUT:
-        data = cached_data['data']
-    else:
-        data = requests.get(
-            f'https://financialmodelingprep.com/api/v3/quote/{symbols}?apikey={APIKEY}').json()
-        cache.set(cache_key, {'data': data,
-                  'timestamp': current_time}, CACHE_TIMEOUT)
-    for i, stock in enumerate(stocks):
-        stock.price = data[i]['price']
-        stock.changesPercentage = data[i]['changesPercentage']
-        stock.change = data[i]['change']
-        stock.dayLow = data[i]['dayLow']
-        stock.dayHigh = data[i]['dayHigh']
-        stock.yearHigh = data[i]['yearHigh']
-        stock.yearLow = data[i]['yearLow']
-        stock.marketCap = data[i]['marketCap']
-        stock.priceAvg50 = data[i]['priceAvg50']
-        stock.priceAvg200 = data[i]['priceAvg200']
-        stock.volume = data[i]['volume']
-        stock.avgVolume = data[i]['avgVolume']
-        stock.open = data[i]['open']
-        stock.previousClose = data[i]['previousClose']
-        stock.eps = data[i]['eps']
-        stock.pe = data[i]['pe']
-        stock.earningsAnnouncement = data[i]['earningsAnnouncement']
-        stock.sharesOutstanding = data[i]['sharesOutstanding']
-        stock.timestamp = data[i]['timestamp']
-        stock.save()
 
 
 class FollowView(APIView):
@@ -58,8 +17,7 @@ class FollowView(APIView):
         if not Stock.objects.filter(users__id=request.user.id).exists():
             return Response(status=status.HTTP_204_NO_CONTENT)
         stocks = Stock.objects.filter(users__id=request.user.id)
-        if updater:
-            update(stocks)
+        update(stocks)
         serializedData = StockSerializer(
             Stock.objects.filter(users__id=request.user.id), many=True).data
         return Response(serializedData)
@@ -81,22 +39,21 @@ class AddStockView(APIView):
         symbol = request.data['symbol']
         if Stock.objects.filter(symbol=symbol).exists():
             if Stock.objects.filter(symbol=symbol, users__id=request.user.id).exists():
-                return Response(status=status.HTTP_409_CONFLICT)
-            stock = Stock.objects.get(symbol=symbol)
-            stock.users.add(request.user)
-            stock.save()
-            return Response(StockSerializer(stock).data, status=status.HTTP_201_CREATED)
+                return JsonResponse({'message': 'Stock already followed'}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            data = requests.get(
-                f'https://financialmodelingprep.com/api/v3/quote/{symbol}?apikey={APIKEY}').json()[0]
-            serializer = StockSerializer(data=data)
-            if serializer.is_valid():
-                serializer.save()
-                stock = Stock.objects.get(symbol=symbol)
-                stock.users.add(request.user)
-                stock.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            stock_data = requests.get(
+                f'https://financialmodelingprep.com/api/v3/quote/{symbol}?apikey={APIKEY}').json()
+            if len(stock_data) == 0:
+                return JsonResponse({"message": "Stock not found"}, status=status.HTTP_404_NOT_FOUND)
+            stock_data = stock_data[0]
+            serializer = StockSerializer(data=stock_data)
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            serializer.save()
+        stock = Stock.objects.get(symbol=symbol)
+        stock.users.add(request.user)
+        stock.save()
+        return Response(StockSerializer(stock).data, status=status.HTTP_201_CREATED)
 
 
 class RemoveStockView(APIView):

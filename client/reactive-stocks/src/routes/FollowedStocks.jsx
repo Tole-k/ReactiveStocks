@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from '../axiosConfig';
+import api from '../api';
 import SearchBar from '../components/SearchBar';
 import StockTable from '../components/StockTable';
 import { fetchSuggestions } from '../utils/dataFetchers';
-import { checkAuth } from '../utils/auth';
 import { Container, Alert, Spinner } from 'react-bootstrap';
 
-export default function FollowedStocks() {
+export default function FollowedStocks({ fresh }) {
     const [suggestions, setSuggestions] = useState([]);
     const [enteredText, setEnteredText] = useState('');
     const [stocks, setStocks] = useState([]);
@@ -15,7 +14,6 @@ export default function FollowedStocks() {
     const [errorMessage, setErrorMessage] = useState("");
     const [loading, setLoading] = useState(false);
 
-    const accessToken = localStorage.getItem('access_token');
     const enable_suggestions = true;
     const navigate = useNavigate();
 
@@ -23,7 +21,7 @@ export default function FollowedStocks() {
         setEnteredText(event.target.value);
         setSymbol(event.target.value);
         if (enable_suggestions)
-            fetchSuggestions(event.target.value, accessToken, setSuggestions);
+            fetchSuggestions(event.target.value, setSuggestions);
         if (!event.target.value) {
             setSuggestions([]);
         }
@@ -40,12 +38,7 @@ export default function FollowedStocks() {
             console.log("fetching stocks");
             setLoading(true);
             try {
-                const response = await axios.get('http://localhost:8000/follow/', {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${accessToken}`
-                    }
-                });
+                const response = await api.get('http://localhost:8000/follow/');
                 console.log(response);
                 if (response.status === 200) {
                     setStocks(response.data);
@@ -56,29 +49,11 @@ export default function FollowedStocks() {
                 setLoading(false);
             }
         }
-
-        async function authenticate() {
-            if (!accessToken) {
-                navigate('/user_auth/login');
-                return;
-            }
-            const isAuthenticated = await checkAuth(accessToken, navigate);
-            if (isAuthenticated) {
-                fetchStocks();
-            }
-        }
-
-        authenticate();
-    }, [accessToken, navigate]);
+        fetchStocks();
+    }, [fresh, navigate]);
 
     async function addStock() {
-        await axios.post("http://127.0.0.1:8000/follow/add/", { symbol }, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${accessToken}`
-            }
-        }).then((response) => {
-            console.log(response);
+        await api.post("http://127.0.0.1:8000/follow/add/", { symbol }).then((response) => {
             return response.data;
         }).then((data) => {
             if (!stocks.some((stock) => stock.symbol === symbol)) {
@@ -87,20 +62,13 @@ export default function FollowedStocks() {
             setEnteredText("");
             setSuggestions([]);
         }).catch((error) => {
-            console.log(error);
-            setErrorMessage("Failed to add stock. Please try again.");
+            setErrorMessage(`Failed to add stock. ${error.response.data.message}`);
         });
     }
 
     async function removeStock(id) {
-        await axios.delete(`http://127.0.0.1:8000/follow/remove/${id}/`, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${accessToken}`
-            }
-        }).catch((error) => {
-            console.log(error);
-            setErrorMessage("Failed to remove stock. Please try again.");
+        await api.delete(`http://127.0.0.1:8000/follow/remove/${id}/`).catch((error) => {
+            setErrorMessage(`Failed to remove stock. Please try again.", ${error.response.data.message}`);
         });
         setStocks(stocks.filter((stock) => stock.id !== id));
     }

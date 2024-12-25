@@ -1,14 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from '../axiosConfig';
+import api from '../api';
 import xirr from '@webcarrot/xirr';
 import XirrSummary from '../components/XirrSummary';
 import PositionForm from '../components/PositionForm';
 import PositionTable from '../components/PositionTable';
 import PortfolioSelector from '../components/PortfolioSelector';
-import { checkAuth } from '../utils/auth'; // Import the checkAuth function
-import { fetchPortfolios, fetchPositions, fetchSuggestions } from '../utils/dataFetchers'; // Import the data fetchers
-import { Spinner, Container, Modal, Button, Form, Row, Col } from 'react-bootstrap';
+import { fetchPortfolios, fetchPositions, fetchSuggestions } from '../utils/dataFetchers';
+import { Spinner, Container, Modal, Button, Form, Row, Col, Alert } from 'react-bootstrap';
 
 function Portfolio() {
     const [positions, setPositions] = useState([]);
@@ -18,7 +16,6 @@ function Portfolio() {
     const [date, setDate] = useState("");
     const [suggestions, setSuggestions] = useState([]);
     const [enteredText, setEnteredText] = useState('');
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [portfolios, setPortfolios] = useState([]);
     const [chosen_portfolio, setChosenPortfolio] = useState(null);
     const [sellAmount, setSellAmount] = useState(0.0);
@@ -28,36 +25,23 @@ function Portfolio() {
     const [showModal, setShowModal] = useState(false);
     const [newPortfolioName, setNewPortfolioName] = useState("");
 
-    const accessToken = localStorage.getItem('access_token');
     const enable_suggestions = true;
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        async function authenticate() {
-            const isAuthenticated = await checkAuth(accessToken, navigate);
-            setIsAuthenticated(isAuthenticated);
-        }
-
-        authenticate();
-    }, [accessToken, navigate]);
 
     useEffect(() => {
         async function loadPortfolios() {
             setLoading(true);
-            const portfoliosData = await fetchPortfolios(accessToken);
+            const portfoliosData = await fetchPortfolios();
             setPortfolios(portfoliosData);
             setLoading(false);
         }
 
-        if (isAuthenticated) {
-            loadPortfolios();
-        }
-    }, [accessToken, isAuthenticated]);
+        loadPortfolios();
+    }, []);
 
     useEffect(() => {
         async function loadPositions() {
             setLoading(true);
-            const positionsData = await fetchPositions(accessToken, chosen_portfolio);
+            const positionsData = await fetchPositions(chosen_portfolio);
             setPositions(positionsData);
             setLoading(false);
         }
@@ -65,7 +49,7 @@ function Portfolio() {
         if (chosen_portfolio) {
             loadPositions();
         }
-    }, [accessToken, chosen_portfolio]);
+    }, [chosen_portfolio]);
 
     useEffect(() => {
         const storedPortfolio = localStorage.getItem('chosen_portfolio');
@@ -81,12 +65,7 @@ function Portfolio() {
             average_price: price,
             timestamp: date
         };
-        axios.post(`http://127.0.0.1:8000/portfolio/open/${chosen_portfolio.id}/`, positionData, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${accessToken}`
-            }
-        }).then((response) => response.data).then((data) => {
+        api.post(`http://127.0.0.1:8000/portfolio/open/${chosen_portfolio.id}/`, positionData).then((response) => response.data).then((data) => {
             if (positions.some((position) => position.stock.symbol === symbol)) {
                 const next_positions = positions.map((position) => {
                     if (position.stock.symbol === symbol) {
@@ -109,7 +88,7 @@ function Portfolio() {
             setDate("");
         }).catch((error) => {
             console.log(error);
-            setErrorMessage("Failed to open position. Please try again.");
+            setErrorMessage(`Failed to open position. ${error.response.data.message}`);
         });
         e.preventDefault();
     }
@@ -120,12 +99,7 @@ function Portfolio() {
             quantity: sellAmount
         };
         console.log(sellData);
-        await axios.post(`http://127.0.0.1:8000/portfolio/close/${id}/`, sellData, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${accessToken}`
-            }
-        }).then((response) => {
+        await api.post(`http://127.0.0.1:8000/portfolio/close/${id}/`, sellData).then((response) => {
             if (response.status === 200) {
                 setPositions((prev) => prev.filter((stock) => stock.id !== id));
             }
@@ -153,7 +127,7 @@ function Portfolio() {
         setEnteredText(event.target.value);
         setSymbol(event.target.value);
         if (enable_suggestions)
-            fetchSuggestions(event.target.value, accessToken, setSuggestions);
+            fetchSuggestions(event.target.value, setSuggestions);
         if (!event.target.value) {
             setSuggestions([]);
         }
@@ -182,12 +156,7 @@ function Portfolio() {
     async function create_new_portfolio() {
         if (newPortfolioName) {
             try {
-                const response = await axios.post("http://127.0.0.1:8000/piechart/add/", { name: newPortfolioName }, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${accessToken}`
-                    }
-                });
+                const response = await api.post("http://127.0.0.1:8000/piechart/add/", { name: newPortfolioName });
                 if (response.status === 201) {
                     setPortfolios((prev) => [...prev, response.data]);
                     choose_portfolio(response.data);
@@ -212,6 +181,7 @@ function Portfolio() {
             date: new Date()
         });
         try {
+            console.log(cashFlows);
             const xir = xirr(cashFlows);
             return xir;
         }
@@ -245,7 +215,7 @@ function Portfolio() {
 
     return (
         <Container className='whole-page'>
-            {errorMessage && <div className="error-message">{errorMessage}</div>}
+            {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
             {loading && (
                 <div className="spinner-container">
                     <Spinner animation="border" role="status">
@@ -265,7 +235,7 @@ function Portfolio() {
                     </Col>
                 </Row>
             }
-            {!loading && portfolios.length > 0 &&
+            {!loading && chosen_portfolio &&
                 <div>
                     <PositionForm
                         suggestions={suggestions}

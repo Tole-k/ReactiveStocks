@@ -6,6 +6,8 @@ import Logout from './routes/logout';
 import PieCharts from './routes/pieChart';
 import Portfolio from './routes/Portfolio';
 import App from './App';
+import NotFound from './not-found';
+import ProtectedRoute from './components/ProtectedRoute';
 
 const router = createBrowserRouter([
     {
@@ -15,19 +17,27 @@ const router = createBrowserRouter([
         children: [
             {
                 path: "/",
-                element: <FollowedStocks />
+                element: <ProtectedRoute>
+                    <FollowedStocks />
+                </ProtectedRoute>
             },
             {
                 path: "/follow",
-                element: <FollowedStocks />,
+                element: <ProtectedRoute>
+                    <FollowedStocks />
+                </ProtectedRoute>
             },
             {
                 path: "/portfolio",
-                element: <Portfolio />,
+                element: <ProtectedRoute>
+                    <Portfolio />
+                </ProtectedRoute>
             },
             {
                 path: "/pieChart",
-                element: <PieCharts />,
+                element: <ProtectedRoute>
+                    <PieCharts />
+                </ProtectedRoute>
             },
             {
                 path: "user_auth/login",
@@ -35,9 +45,14 @@ const router = createBrowserRouter([
             },
             {
                 path: "user_auth/logout",
-                element: <Logout />,
+                element: <ProtectedRoute>
+                    <Logout />
+                </ProtectedRoute>
             },
-        ]
-    },
+        ],
+    }, {
+        'path': '*',
+        'element': <NotFound />
+    }
 ]);
 export default router;

@@ -29,29 +29,3 @@ class Stock(models.Model):
 
     def __str__(self):
         return self.name
-
-    def serialize(self):
-        return {
-            "symbol": self.symbol,
-            "name": self.name,
-            "price": self.price,
-            "changesPercentage": self.changesPercentage,
-            "change": self.change,
-            "dayLow": self.dayLow,
-            "dayHigh": self.dayHigh,
-            "yearHigh": self.yearHigh,
-            "yearLow": self.yearLow,
-            "marketCap": self.marketCap,
-            "priceAvg50": self.priceAvg50,
-            "priceAvg200": self.priceAvg200,
-            "volume": self.volume,
-            "avgVolume": self.avgVolume,
-            "exchange": self.exchange,
-            "open": self.open,
-            "previousClose": self.previousClose,
-            "eps": self.eps,
-            "pe": self.pe,
-            "earningsAnnouncement": self.earningsAnnouncement,
-            "sharesOutstanding": self.sharesOutstanding,
-            "timestamp": self.timestamp,
-        }

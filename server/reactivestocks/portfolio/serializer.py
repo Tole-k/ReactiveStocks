@@ -1,3 +1,4 @@
+from os import read
 from rest_framework import serializers
 from .models import DummyPosition, Position, Transaction
 from follow.serializer import StockSerializer
@@ -11,7 +12,7 @@ class TransactionSerializer(serializers.ModelSerializer):
 
 
 class PositionSerializer(serializers.ModelSerializer):
-    stock = StockSerializer()
+    stock = StockSerializer(read_only=True)
     transactions = TransactionSerializer(many=True)
 
     class Meta:
@@ -20,6 +21,8 @@ class PositionSerializer(serializers.ModelSerializer):
 
 
 class DummyPositionSerializer(serializers.ModelSerializer):
+
+    stock = StockSerializer(read_only=True)
 
     class Meta:
         model = DummyPosition

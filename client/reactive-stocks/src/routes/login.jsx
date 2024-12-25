@@ -1,16 +1,19 @@
-import axios from '../axiosConfig';
+import api from '../api';
 import { useNavigate } from 'react-router-dom';
 import { useState } from "react";
-import { Alert, Container, Spinner } from "react-bootstrap";
+import { Alert, Spinner } from "react-bootstrap";
+import { ACCESS_TOKEN, REFRESH_TOKEN } from '../constants';
+import { useOutletContext } from 'react-router-dom';
 
 export default function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [email, setEmail] = useState('');
     const [repeatPassword, setRepeatPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const { toggle_auth } = useOutletContext();
+
     async function login(e) {
         e.preventDefault();
         setLoading(true);
@@ -20,19 +23,14 @@ export default function Login() {
         };
 
         try {
-            const response = await axios.post('http://localhost:8000/token/', user, {
-                headers: {
-                    'Content-Type': 'application/json',
-                }, withCredentials: true
-            });
+            const response = await api.post('http://localhost:8000/token/', user);
             const { access, refresh } = response.data;
             localStorage.clear();
             console.log(access, refresh);
-            localStorage.setItem('access_token', access);
-            localStorage.setItem('refresh_token', refresh);
-            axios.defaults.headers.common['Authorization'] =
-                `Bearer ${access}`;
+            localStorage.setItem(ACCESS_TOKEN, access);
+            localStorage.setItem(REFRESH_TOKEN, refresh);
             navigate('/');
+            toggle_auth(true);
         } catch (e) {
             console.log('login not working', e);
             setErrorMessage("Login failed. Please check your credentials and try again.");
@@ -46,17 +44,12 @@ export default function Login() {
         setLoading(true);
         const user = {
             username,
-            email,
             password,
             confirm_password: repeatPassword
         };
 
         try {
-            const response = await axios.post('http://localhost:8000/user_auth/register/', user, {
-                headers: {
-                    'Content-Type': 'application/json',
-                }, withCredentials: true
-            });
+            const response = await api.post('http://localhost:8000/user_auth/register/', user);
             if (response.status === 201) {
                 console.log('User created');
                 login(e);
@@ -117,15 +110,6 @@ export default function Login() {
                                 type='text' value={username}
                                 required
                                 onChange={e => setUsername(e.target.value)} />
-                        </div>
-                        <div className="form-group mt-3">
-                            <label>Email</label>
-                            <input className="form-control mt-1"
-                                placeholder="Enter Email"
-                                name='email'
-                                type='text' value={email}
-                                required
-                                onChange={e => setEmail(e.target.value)} />
                         </div>
                         <div className="form-group mt-3">
                             <label>Password</label>
