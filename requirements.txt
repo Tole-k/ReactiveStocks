@@ -3,6 +3,7 @@ django-cors
 djangorestframework
 django-cors-headers
 djangorestframework-simplejwt
+django_extensions
 requests
 asgiref
 PyJWT
