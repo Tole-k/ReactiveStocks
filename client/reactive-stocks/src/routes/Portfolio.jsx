@@ -55,6 +55,15 @@ function Portfolio() {
         }
     }, []);
 
+    useEffect(() => {
+        if (errorMessage) {
+            const timer = setTimeout(() => {
+                setErrorMessage("");
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [errorMessage]);
+
     async function openPosition(e) {
         const positionData = {
             symbol,

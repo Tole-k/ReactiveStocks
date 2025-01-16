@@ -38,6 +38,15 @@ export default function FollowedStocks({ fresh }) {
         fetchStocks();
     }, [fresh, navigate]);
 
+    useEffect(() => {
+        if (errorMessage) {
+            const timer = setTimeout(() => {
+                setErrorMessage("");
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [errorMessage]);
+
     async function addStock() {
         await api.post("http://127.0.0.1:8000/follow/add/", { symbol }).then((response) => {
             return response.data;

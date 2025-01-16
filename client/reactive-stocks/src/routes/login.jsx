@@ -1,6 +1,6 @@
 import api from '../api';
 import { useNavigate } from 'react-router-dom';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Alert, Spinner } from "react-bootstrap";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from '../constants';
 import { useOutletContext } from 'react-router-dom';
@@ -13,6 +13,15 @@ export default function Login() {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const { toggle_auth } = useOutletContext();
+
+    useEffect(() => {
+        if (errorMessage) {
+            const timer = setTimeout(() => {
+                setErrorMessage("");
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [errorMessage]);
 
     async function login(e) {
         e.preventDefault();

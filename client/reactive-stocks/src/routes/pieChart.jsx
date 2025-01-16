@@ -104,6 +104,15 @@ export default function PieCharts() {
         generate_recommendations();
     }, [positions, proportions]);
 
+    useEffect(() => {
+        if (errorMessage) {
+            const timer = setTimeout(() => {
+                setErrorMessage("");
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [errorMessage]);
+
     function choose_portfolio(portfolio) {
         localStorage.setItem('chosen_portfolio', JSON.stringify(portfolio));
         setChosenPortfolio(portfolio);
