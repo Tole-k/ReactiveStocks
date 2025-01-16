@@ -1,4 +1,4 @@
-from datetime import datetime, time
+from datetime import datetime
 from django.http import JsonResponse
 from rest_framework.response import Response
 from rest_framework import status

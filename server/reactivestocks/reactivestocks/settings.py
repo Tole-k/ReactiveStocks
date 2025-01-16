@@ -12,8 +12,6 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
-from pickle import TRUE
-from unittest.mock import DEFAULT
 from dotenv import load_dotenv
 
 load_dotenv()

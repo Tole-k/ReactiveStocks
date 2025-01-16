@@ -1,7 +1,6 @@
 import { Form, Button } from 'react-bootstrap';
-import Suggestions from './Suggestions';
 
-export default function PositionForm({ suggestions, enteredText, suggestionsClick, quantity, price, date, openPosition, setDate, setPrice, searchBarChange, setQuantity }) {
+export default function PositionForm({ enteredText, quantity, price, date, openPosition, setDate, setPrice, searchBarChange, setQuantity }) {
     return (
         <div className='portfolio-container'>
             <Form className='portfolio-form'>
@@ -9,7 +8,6 @@ export default function PositionForm({ suggestions, enteredText, suggestionsClic
                     <Form.Group>
                         <Form.Label>Symbol:</Form.Label>
                         <Form.Control type="text" placeholder="Stock Symbol..." value={enteredText} onChange={searchBarChange} />
-                        <Suggestions suggestions={suggestions} suggestionsClick={suggestionsClick} id='portfolio' />
                     </Form.Group>
                 </div>
                 <Form.Group>

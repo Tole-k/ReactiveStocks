@@ -28,14 +28,3 @@ export async function fetchPositions(chosen_portfolio) {
     }
     return [];
 }
-
-export async function fetchSuggestions(symbol, setSuggestions) {
-    if (symbol.length > 1) {
-        try {
-            const response = await api.get(`http://127.0.0.1:8000/follow/suggestions/${symbol}/`);
-            setSuggestions(response.data);
-        } catch (error) {
-            console.log(error);
-        }
-    }
-}

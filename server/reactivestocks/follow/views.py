@@ -23,15 +23,6 @@ class FollowView(APIView):
         return Response(serializedData)
 
 
-class SuggestionsView(APIView):
-    permission_classes = (IsAuthenticated, )
-
-    def get(self, request, symbol):
-        data = requests.get(
-            f'https://financialmodelingprep.com/api/v3/search?query={symbol}&limit=5&apikey={APIKEY}').json()
-        return Response(data)
-
-
 class AddStockView(APIView):
     permission_classes = (IsAuthenticated, )
 

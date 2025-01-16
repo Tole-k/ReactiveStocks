@@ -5,7 +5,7 @@ import XirrSummary from '../components/XirrSummary';
 import PositionForm from '../components/PositionForm';
 import PositionTable from '../components/PositionTable';
 import PortfolioSelector from '../components/PortfolioSelector';
-import { fetchPortfolios, fetchPositions, fetchSuggestions } from '../utils/dataFetchers';
+import { fetchPortfolios, fetchPositions } from '../utils/dataFetchers';
 import { Spinner, Container, Modal, Button, Form, Row, Col, Alert } from 'react-bootstrap';
 
 function Portfolio() {
@@ -14,7 +14,6 @@ function Portfolio() {
     const [quantity, setQuantity] = useState(0.0);
     const [price, setPrice] = useState(0.0);
     const [date, setDate] = useState("");
-    const [suggestions, setSuggestions] = useState([]);
     const [enteredText, setEnteredText] = useState('');
     const [portfolios, setPortfolios] = useState([]);
     const [chosen_portfolio, setChosenPortfolio] = useState(null);
@@ -24,8 +23,6 @@ function Portfolio() {
     const [loading, setLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [newPortfolioName, setNewPortfolioName] = useState("");
-
-    const enable_suggestions = true;
 
     useEffect(() => {
         async function loadPortfolios() {
@@ -82,7 +79,6 @@ function Portfolio() {
                 setPositions((prev) => [...prev, data]);
             }
             setEnteredText("");
-            setSuggestions([]);
             setQuantity(0.0);
             setPrice(0.0);
             setDate("");
@@ -126,17 +122,6 @@ function Portfolio() {
     function searchBarChange(event) {
         setEnteredText(event.target.value);
         setSymbol(event.target.value);
-        if (enable_suggestions)
-            fetchSuggestions(event.target.value, setSuggestions);
-        if (!event.target.value) {
-            setSuggestions([]);
-        }
-    }
-
-    function suggestionsClick(symbol) {
-        setSymbol(symbol);
-        setEnteredText(symbol);
-        setSuggestions([]);
     }
 
     function choose_portfolio(portfolio) {
@@ -238,9 +223,7 @@ function Portfolio() {
             {!loading && chosen_portfolio &&
                 <div>
                     <PositionForm
-                        suggestions={suggestions}
                         enteredText={enteredText}
-                        suggestionsClick={suggestionsClick}
                         quantity={quantity}
                         price={price}
                         date={date}

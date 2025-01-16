@@ -4,14 +4,13 @@ import PortfolioPieChart from "../components/PortfolioPieChart";
 import PortfolioSelector from "../components/PortfolioSelector";
 import { RebalancingRecommendations } from "../components/RebalancingRecommendations";
 import { AllocationForm } from "../components/AllocationForm";
-import { fetchPortfolios, fetchPositions, fetchSuggestions } from '../utils/dataFetchers';
+import { fetchPortfolios, fetchPositions } from '../utils/dataFetchers';
 import { Spinner, Container, Row, Col, Alert } from "react-bootstrap";
 
 export default function PieCharts() {
     const [positions, setPositions] = useState([]);
     const [symbol, setSymbol] = useState("");
     const [allocation, setAllocation] = useState(0.0);
-    const [suggestions, setSuggestions] = useState([]);
     const [enteredText, setEnteredText] = useState('');
     const [portfolios, setPortfolios] = useState([]);
     const [chosen_portfolio, setChosenPortfolio] = useState(null);
@@ -19,7 +18,6 @@ export default function PieCharts() {
     const [recommendations, setRecommendations] = useState([]);
     const [errorMessage, setErrorMessage] = useState("");
     const [loading, setLoading] = useState(false);
-    const enable_suggestions = true;
 
     useEffect(() => {
         async function loadPortfolios() {
@@ -114,17 +112,6 @@ export default function PieCharts() {
     function searchBarChange(event) {
         setEnteredText(event.target.value);
         setSymbol(event.target.value);
-        if (enable_suggestions)
-            fetchSuggestions(event.target.value, setSuggestions);
-        if (!event.target.value) {
-            setSuggestions([]);
-        }
-    }
-
-    function suggestionsClick(symbol) {
-        setSymbol(symbol);
-        setEnteredText(symbol);
-        setSuggestions([]);
     }
 
     function prepare_portfolio_data() {
@@ -171,7 +158,6 @@ export default function PieCharts() {
                     setProportions((prev) => [...prev, response.data]);
                 }
                 setEnteredText("");
-                setSuggestions([]);
                 setSymbol("");
                 setAllocation(0.0);
             }
@@ -210,7 +196,7 @@ export default function PieCharts() {
                     </Col>
                     <Col md={6}>
                         <PortfolioPieChart prepare_data={prepare_allocation_data} COLORS={COLORS} label={'Target Portfolio'} />
-                        <AllocationForm enteredText={enteredText} searchBarChange={searchBarChange} suggestionsClick={suggestionsClick} setAllocation={setAllocation} allocation={allocation} add_allocation={add_allocation} suggestions={suggestions} />
+                        <AllocationForm enteredText={enteredText} searchBarChange={searchBarChange} setAllocation={setAllocation} allocation={allocation} add_allocation={add_allocation} />
                     </Col>
                 </Row>
             }

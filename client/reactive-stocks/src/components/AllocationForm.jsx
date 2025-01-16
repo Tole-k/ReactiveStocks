@@ -3,11 +3,9 @@ import { Form, Button, Row, Col, Dropdown } from 'react-bootstrap';
 export function AllocationForm({
     enteredText,
     searchBarChange,
-    suggestionsClick,
     setAllocation,
     allocation,
     add_allocation,
-    suggestions
 }) {
     return (
         <div className='portfolio-form'>
@@ -52,20 +50,6 @@ export function AllocationForm({
                                 Set
                             </Button>
                         </Col>
-                    </Row>
-                    <Row>
-                        {suggestions.length > 0 && (
-                            <Dropdown className='dropdown'>
-                                {suggestions.map((suggestion, index) => (
-                                    <Dropdown.Item
-                                        key={index}
-                                        onClick={() => suggestionsClick(suggestion.symbol)}
-                                    >
-                                        {suggestion.symbol} ({suggestion.name})
-                                    </Dropdown.Item>
-                                ))}
-                            </Dropdown>
-                        )}
                     </Row>
                 </Form>
             </Row>

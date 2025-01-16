@@ -17,7 +17,6 @@ class DummyPosition(AbstractPosition):
     allocation = models.FloatField()
 
 
-
 class Position(AbstractPosition):
 
     quantity = models.FloatField(blank=True)
