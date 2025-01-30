@@ -11,6 +11,8 @@ async function refreshToken() {
 
         if (response.status === 200) {
             localStorage.setItem(ACCESS_TOKEN, response.data.access);
+            localStorage.setItem(REFRESH_TOKEN, response.data.refresh);
+            console.log('Token refreshed');
             return true;
         }
         else {
