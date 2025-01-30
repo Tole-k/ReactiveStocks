@@ -4,7 +4,7 @@ import { Table, Form, Button } from "react-bootstrap";
 export default function PositionTable({ chosen_portfolio, positions, calculatePositionXirr, setSellAmount, setSellPrice, closePosition }) {
     return (
         <div className='tableWrap'>
-            <Table striped bordered hover className='stock-table'>
+            <Table striped bordered hover responsive className='stock-table'>
                 <thead>
                     <tr>
                         <th className="text-center align-middle">Symbol</th>

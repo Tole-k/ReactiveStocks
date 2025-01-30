@@ -58,18 +58,9 @@ export default function App() {
                     </Navbar.Collapse>
                 </Container>
             </Navbar>
-            <div id="detail" style={{ flex: 1 }}>
+            <div id="detail">
                 <Outlet context={{ toggle_auth: (bool) => setIsAuthenticated(bool) }} />
             </div>
-            <footer className="bg-dark text-white p-4 text-center foot" style={{ position: 'fixed', bottom: 0, width: '100%' }}>
-                <Container>
-                    <Row>
-                        <Col>
-                            <p>&copy; {new Date().getFullYear()} ReactiveStocks. All Rights Reserved.</p>
-                        </Col>
-                    </Row>
-                </Container>
-            </footer>
         </>
     );
 }

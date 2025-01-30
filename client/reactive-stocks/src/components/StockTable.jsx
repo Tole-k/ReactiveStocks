@@ -4,7 +4,7 @@ import Button from 'react-bootstrap/Button';
 export default function StockTable({ stocks, removeStock }) {
     return (
         <div className='tableWrap'>
-            <Table striped bordered hover className='stock-table'>
+            <Table striped bordered hover responsive className='stock-table'>
                 <thead>
                     <tr>
                         <th className="text-center align-middle">Symbol</th>
